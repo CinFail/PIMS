@@ -13,7 +13,7 @@ class DoctorProfile extends Model
 
     protected $fillable = [
         'user_id', 'specialization', 'license_number',
-        'contact_number', 'short_bio', 'is_active',
+        'short_bio', 'is_active',
     ];
 
     protected $casts = ['is_active' => 'boolean'];

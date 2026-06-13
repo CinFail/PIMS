@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\PatientProfile;
 use App\Models\Role;
 use App\Models\User;
+use App\Rules\MobileNumber;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -27,7 +28,7 @@ class RegisterController extends Controller
             'first_name'    => ['required', 'string', 'max:50'],
             'last_name'     => ['required', 'string', 'max:50'],
             'email'         => ['required', 'email', 'max:254', 'unique:users,email'],
-            'mobile_number' => ['nullable', 'string', 'max:20'],
+            'mobile_number' => ['nullable', new MobileNumber],
             'date_of_birth' => ['required', 'date'],
             'password'      => ['required', 'string', 'min:6', 'confirmed'],
         ]);

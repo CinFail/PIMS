@@ -29,17 +29,17 @@ INSERT INTO users (user_id, first_name, last_name, email, mobile_number, passwor
 -- ---------- PROFILES ----------
 INSERT INTO admin_profiles (user_id) VALUES (1);
 
-INSERT INTO doctor_profiles (doctor_id, user_id, specialization, license_number, contact_number, short_bio, is_active) VALUES
-(1, 2, 'General Medicine', 'LIC-DOC-1001', '09170000002', 'General practitioner with 15 years of experience.', 1),
-(2, 6, 'Pediatrics',       'LIC-DOC-1002', '09170000006', 'Pediatrician focused on child wellness.', 1);
+INSERT INTO doctor_profiles (doctor_id, user_id, specialization, license_number, short_bio, is_active) VALUES
+(1, 2, 'General Medicine', 'LIC-DOC-1001', 'General practitioner with 15 years of experience.', 1),
+(2, 6, 'Pediatrics',       'LIC-DOC-1002', 'Pediatrician focused on child wellness.', 1);
 
 INSERT INTO receptionist_profiles (user_id) VALUES (3);
 
 INSERT INTO med_tech_profiles (medtech_id, user_id, license_number) VALUES
 (1, 4, 'LIC-MT-2001');
 
-INSERT INTO patient_profiles (patient_id, user_id, sex, contact_number, address, emergency_contact_name, emergency_contact_number, blood_type) VALUES
-(1, 5, 'Female', '09170000005', '123 Mabini St, Quezon City', 'Pedro Santos', '09170000099', 'O+');
+INSERT INTO patient_profiles (patient_id, user_id, sex, address, emergency_contact_name, emergency_contact_number, blood_type) VALUES
+(1, 5, 'Female', '123 Mabini St, Quezon City', 'Pedro Santos', '09170000099', 'O+');
 
 INSERT INTO patient_medical_histories (patient_id, allergies, chronic_conditions, current_medications) VALUES
 (1, 'Penicillin', 'None', 'None');

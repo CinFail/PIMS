@@ -11,6 +11,7 @@ use App\Models\PatientProfile;
 use App\Models\ReceptionistProfile;
 use App\Models\Role;
 use App\Models\User;
+use App\Rules\MobileNumber;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -51,7 +52,7 @@ class UserController extends Controller
             'first_name'     => ['required', 'string', 'max:50'],
             'last_name'      => ['required', 'string', 'max:50'],
             'email'          => ['required', 'email', 'max:254', 'unique:users,email'],
-            'mobile_number'  => ['nullable', 'string', 'max:20'],
+            'mobile_number'  => ['nullable', new MobileNumber],
             'date_of_birth'  => ['required', 'date'],
             'role'           => ['required', 'in:super_admin,doctor,receptionist,med_tech,patient'],
             'license_number' => ['nullable', 'string', 'max:50'],
@@ -123,10 +124,17 @@ class UserController extends Controller
         return redirect()->route('admin.users.index')->with('status', 'New user created successfully.');
     }
 
-    /** Toggle a user between Active and Deactivated. */
+    /** Toggle a user between Active and Deactivated. Super Admin accounts are immutable. */
     public function toggleStatus(int $userId)
     {
-        $user = User::findOrFail($userId);
+        $user = User::with('roles')->findOrFail($userId);
+
+        if ($user->hasRole('super_admin')) {
+            return back()->withErrors([
+                'guard' => 'Super Admin accounts cannot be deactivated or modified.',
+            ]);
+        }
+
         $new = $user->account_status === 'Active' ? 'Deactivated' : 'Active';
 
         $user->update(['account_status' => $new]);

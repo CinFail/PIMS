@@ -135,7 +135,6 @@ CREATE TABLE doctor_profiles (
     -- NOT NULL enforced at app layer: prescriptions cannot be issued
     --   without a registered license number.
     license_number  VARCHAR(50)  NOT NULL,
-    contact_number  VARCHAR(20),
     -- Short bio/description shown to patients during appointment booking
     short_bio       VARCHAR(500),
     is_active       TINYINT(1)   DEFAULT 1,
@@ -157,7 +156,6 @@ CREATE TABLE patient_profiles (
     patient_id               INT AUTO_INCREMENT PRIMARY KEY,
     user_id                  INT NOT NULL UNIQUE,
     sex                      ENUM('Male','Female'),
-    contact_number           VARCHAR(20),
     address                  TEXT,
     emergency_contact_name   VARCHAR(100),
     emergency_contact_number VARCHAR(20),
@@ -356,6 +354,35 @@ CREATE TABLE lab_result_requests (
     FOREIGN KEY (fulfilled_by)     REFERENCES med_tech_profiles(medtech_id),
     FOREIGN KEY (void_approved_by) REFERENCES users(user_id)
 );
+
+-- Laboratory appointments.
+--   Patients book laboratory visits independently of any doctor consultation.
+--   Kept fully separate from the doctor `appointments` table so each workflow
+--   evolves on its own. Optionally linked to the lab_request holding the tests
+--   the patient asked for.
+CREATE TABLE lab_appointments (
+    lab_appointment_id INT AUTO_INCREMENT PRIMARY KEY,
+    patient_id         INT NOT NULL,
+    -- The self-requested lab tests this visit will perform (NULL = none yet).
+    lab_request_id     INT NULL,
+    scheduled_at       DATETIME NOT NULL,
+    status             ENUM('Scheduled','Confirmed','In Progress','Completed','Cancelled','No Show')
+                          NOT NULL DEFAULT 'Scheduled',
+    notes              TEXT NULL,
+    -- Void pattern (mirrors the rest of the schema)
+    is_voided          TINYINT(1) DEFAULT 0,
+    void_at            DATETIME   NULL,
+    void_reason        TEXT       NULL,
+    void_approved_by   INT        NULL,
+    created_at         DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at         DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (patient_id)       REFERENCES patient_profiles(patient_id),
+    FOREIGN KEY (lab_request_id)   REFERENCES lab_requests(lab_request_id),
+    FOREIGN KEY (void_approved_by) REFERENCES users(user_id)
+);
+
+CREATE INDEX idx_lab_appointments_patient ON lab_appointments(patient_id);
+CREATE INDEX idx_lab_appointments_date    ON lab_appointments(scheduled_at);
 
 -- ==========================================
 -- 7. APPOINTMENTS & CONSULTATIONS

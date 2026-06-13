@@ -19,7 +19,11 @@
         </div>
         <div class="form-group">
             <label for="mobile_number">Mobile Number</label>
-            <input type="text" name="mobile_number" id="mobile_number" value="{{ old('mobile_number', $user->mobile_number) }}">
+            <input type="text" name="mobile_number" id="mobile_number" value="{{ old('mobile_number', $user->mobile_number) }}"
+                   inputmode="numeric" maxlength="11" pattern="[0-9]{11}"
+                   title="Numbers only — exactly 11 digits"
+                   oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+            <p class="help">Numbers only, exactly 11 digits (e.g. 09171234567).</p>
         </div>
 
         <h2>Clinical &amp; Contact</h2>
@@ -36,10 +40,6 @@
             <input type="text" name="blood_type" id="blood_type" value="{{ old('blood_type', $profile->blood_type) }}" maxlength="5">
         </div>
         <div class="form-group">
-            <label for="contact_number">Contact Number</label>
-            <input type="text" name="contact_number" id="contact_number" value="{{ old('contact_number', $profile->contact_number) }}">
-        </div>
-        <div class="form-group">
             <label for="address">Address</label>
             <textarea name="address" id="address">{{ old('address', $profile->address) }}</textarea>
         </div>
@@ -49,7 +49,11 @@
         </div>
         <div class="form-group">
             <label for="emergency_contact_number">Emergency Contact Number</label>
-            <input type="text" name="emergency_contact_number" id="emergency_contact_number" value="{{ old('emergency_contact_number', $profile->emergency_contact_number) }}">
+            <input type="text" name="emergency_contact_number" id="emergency_contact_number" value="{{ old('emergency_contact_number', $profile->emergency_contact_number) }}"
+                   inputmode="numeric" maxlength="11" pattern="[0-9]{11}"
+                   title="Numbers only — exactly 11 digits"
+                   oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+            <p class="help">Numbers only, exactly 11 digits.</p>
         </div>
 
         <h2>Medical History</h2>

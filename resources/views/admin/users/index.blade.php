@@ -24,12 +24,16 @@
                 </td>
                 <td>{{ $u->account_status }}</td>
                 <td class="row-actions">
-                    <form action="{{ route('admin.users.toggle', $u->user_id) }}" method="POST" class="inline-form">
-                        @csrf
-                        <button type="submit" class="btn btn-small btn-outline">
-                            {{ $u->account_status === 'Active' ? 'Deactivate' : 'Activate' }}
-                        </button>
-                    </form>
+                    @if($u->roles->contains(fn ($r) => $r->name === 'super_admin'))
+                        <span class="muted" title="Super Admin accounts are protected and cannot be deactivated.">Protected</span>
+                    @else
+                        <form action="{{ route('admin.users.toggle', $u->user_id) }}" method="POST" class="inline-form">
+                            @csrf
+                            <button type="submit" class="btn btn-small btn-outline">
+                                {{ $u->account_status === 'Active' ? 'Deactivate' : 'Activate' }}
+                            </button>
+                        </form>
+                    @endif
                 </td>
             </tr>
         @endforeach

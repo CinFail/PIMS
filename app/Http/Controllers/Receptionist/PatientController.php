@@ -8,6 +8,7 @@ use App\Models\PatientMedicalHistory;
 use App\Models\PatientProfile;
 use App\Models\Role;
 use App\Models\User;
+use App\Rules\MobileNumber;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -61,10 +62,9 @@ class PatientController extends Controller
             'first_name'          => ['required', 'string', 'max:50'],
             'last_name'           => ['required', 'string', 'max:50'],
             'email'               => ['nullable', 'email', 'max:254', 'unique:users,email'],
-            'mobile_number'       => ['nullable', 'string', 'max:20'],
+            'mobile_number'       => ['nullable', new MobileNumber],
             'date_of_birth'       => ['required', 'date'],
             'sex'                 => ['nullable', 'in:Male,Female'],
-            'contact_number'      => ['nullable', 'string', 'max:20'],
             'address'             => ['nullable', 'string'],
             'password'            => ['required', 'string', 'min:6'],
             'allergies'           => ['nullable', 'string'],
@@ -96,10 +96,9 @@ class PatientController extends Controller
             ]);
 
             $profile = PatientProfile::create([
-                'user_id'        => $user->user_id,
-                'sex'            => $data['sex'] ?? null,
-                'contact_number' => $data['contact_number'] ?? null,
-                'address'        => $data['address'] ?? null,
+                'user_id' => $user->user_id,
+                'sex'     => $data['sex'] ?? null,
+                'address' => $data['address'] ?? null,
             ]);
 
             PatientMedicalHistory::create([

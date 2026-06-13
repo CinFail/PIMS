@@ -13,11 +13,12 @@
         <p class="muted">No patients found.</p>
     @else
         <table>
-            <tr><th>Name</th><th>Email</th><th>Sex</th><th>Blood Type</th><th></th></tr>
+            <tr><th>Name</th><th>Email</th><th>Age</th><th>Sex</th><th>Blood Type</th><th></th></tr>
             @foreach($patients as $p)
                 <tr>
                     <td>{{ $p->user?->fullName() }}</td>
                     <td>{{ $p->user?->email }}</td>
+                    <td>{{ $p->user?->age() !== null ? $p->user->age() : '—' }}</td>
                     <td>{{ $p->sex ?? '—' }}</td>
                     <td>{{ $p->blood_type ?? '—' }}</td>
                     <td class="row-actions">

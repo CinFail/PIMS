@@ -11,6 +11,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Patient\ProfileController as PatientProfileController;
 use App\Http\Controllers\Patient\AppointmentController as PatientAppointmentController;
 use App\Http\Controllers\Patient\LabResultRequestController as PatientLabRequestController;
+use App\Http\Controllers\Patient\LabTestRequestController as PatientLabTestController;
 
 // Doctor
 use App\Http\Controllers\Doctor\AppointmentController as DoctorAppointmentController;
@@ -66,8 +67,13 @@ Route::middleware('auth')->group(function () {
         Route::get('appointments/book', [PatientAppointmentController::class, 'create'])->name('appointments.create');
         Route::post('appointments', [PatientAppointmentController::class, 'store'])->name('appointments.store');
 
-        Route::get('lab-requests', [PatientLabRequestController::class, 'index'])->name('lab.index');
-        Route::post('lab-requests', [PatientLabRequestController::class, 'store'])->name('lab.store');
+        // Laboratory results & soft-copy requests
+        Route::get('lab-results', [PatientLabRequestController::class, 'index'])->name('lab.index');
+        Route::post('lab-results', [PatientLabRequestController::class, 'store'])->name('lab.store');
+
+        // Request a lab test (no doctor consultation) + book a lab appointment
+        Route::get('lab-tests/request', [PatientLabTestController::class, 'create'])->name('lab.request.create');
+        Route::post('lab-tests/request', [PatientLabTestController::class, 'store'])->name('lab.request.store');
     });
 
     // ----------------------- DOCTOR ------------------------

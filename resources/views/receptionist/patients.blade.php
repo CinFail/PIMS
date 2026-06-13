@@ -20,7 +20,7 @@
                 <tr>
                     <td>{{ $p->user?->fullName() }}</td>
                     <td>{{ $p->user?->email }}</td>
-                    <td>{{ $p->user?->mobile_number ?? $p->contact_number ?? '—' }}</td>
+                    <td>{{ $p->user?->mobile_number ?? '—' }}</td>
                     <td class="row-actions">
                         <a href="{{ route('receptionist.patients.show', $p->patient_id) }}" class="btn btn-small">View</a>
                     </td>

@@ -6,9 +6,10 @@
 
     <h2>Quick Actions</h2>
     <p>
-        <a href="{{ route('patient.appointments.create') }}" class="btn">Book an Appointment</a>
+        <a href="{{ route('patient.appointments.create') }}" class="btn">Book a Doctor Appointment</a>
+        <a href="{{ route('patient.lab.request.create') }}" class="btn btn-outline">Request a Lab Test</a>
         <a href="{{ route('patient.profile.edit') }}" class="btn btn-outline">Update Information</a>
-        <a href="{{ route('patient.lab.index') }}" class="btn btn-outline">Request a Lab Result</a>
+        <a href="{{ route('patient.lab.index') }}" class="btn btn-outline">My Lab Results</a>
     </p>
 
     <h2>Recent Appointments</h2>

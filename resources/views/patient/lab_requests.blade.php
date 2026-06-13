@@ -1,33 +1,36 @@
 @extends('layouts.app')
-@section('title', 'Request a Lab Result')
+@section('title', 'My Lab Results')
 @section('content')
-    <h1>Request a Lab Result</h1>
-    <p class="page-subtitle">Ask the MedTech for a soft copy of one of your results.</p>
+    <h1>My Lab Results</h1>
+    <p class="page-subtitle">Request a soft copy of a result. Once the MedTech uploads it, a Download button appears here.</p>
 
     <h2>My Results</h2>
     @if($results->isEmpty())
         <p class="muted">You have no laboratory results yet.</p>
     @else
         <table>
-            <tr><th>Test</th><th>Result</th><th>Status</th><th>Soft Copy</th><th></th></tr>
+            <tr><th>Test</th><th>Result</th><th>Status</th><th>Soft Copy</th></tr>
             @foreach($results as $r)
+                @php($softCopy = $requestStatus[$r->result_id] ?? null)
                 <tr>
                     <td>{{ $r->requestItem?->test?->test_name }}</td>
                     <td>{{ $r->result_value ?? '—' }} {{ $r->unit }}</td>
                     <td>{{ $r->workflow_status }}</td>
                     <td>
-                        @if($r->result_file_path)
-                            <a href="{{ asset('storage/'.$r->result_file_path) }}" target="_blank">Download</a>
+                        @if($softCopy === 'Fulfilled' && $r->result_file_path)
+                            {{-- MedTech has fulfilled the request: enable Download. --}}
+                            <a href="{{ asset('storage/'.$r->result_file_path) }}" class="btn btn-small" target="_blank">Download</a>
+                        @elseif($softCopy === 'Pending')
+                            {{-- Request is waiting on the MedTech. --}}
+                            <span class="muted">Requested — awaiting MedTech</span>
                         @else
-                            <span class="muted">Not uploaded</span>
+                            {{-- Download hidden by default; only the request button shows. --}}
+                            <form action="{{ route('patient.lab.store') }}" method="POST" class="inline-form">
+                                @csrf
+                                <input type="hidden" name="result_id" value="{{ $r->result_id }}">
+                                <button type="submit" class="btn btn-small">Request Soft Copy</button>
+                            </form>
                         @endif
-                    </td>
-                    <td>
-                        <form action="{{ route('patient.lab.store') }}" method="POST" class="inline-form">
-                            @csrf
-                            <input type="hidden" name="result_id" value="{{ $r->result_id }}">
-                            <button type="submit" class="btn btn-small">Request Soft Copy</button>
-                        </form>
                     </td>
                 </tr>
             @endforeach

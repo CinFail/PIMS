@@ -26,7 +26,17 @@ class LabResultRequestController extends Controller
             ->where('patient_id', $patient->patient_id)
             ->orderByDesc('requested_at')->get();
 
-        return view('patient.lab_requests', compact('results', 'myRequests'));
+        // Most-recent soft-copy request status per result for this patient.
+        // Drives the table: 'Fulfilled' => show Download, 'Pending' => show
+        // "Requested", none => show the Request Soft Copy button.
+        $requestStatus = [];
+        foreach ($myRequests as $req) {
+            if (! isset($requestStatus[$req->result_id])) {
+                $requestStatus[$req->result_id] = $req->status;
+            }
+        }
+
+        return view('patient.lab_requests', compact('results', 'myRequests', 'requestStatus'));
     }
 
     /** Submit a soft-copy request for one of the patient's own results. */

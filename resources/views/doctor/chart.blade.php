@@ -15,7 +15,7 @@
         <table>
             <tr><th>Email</th><td>{{ $patient->user?->email }}</td><th>Mobile</th><td>{{ $patient->user?->mobile_number ?? '—' }}</td></tr>
             <tr><th>Sex</th><td>{{ $patient->sex ?? '—' }}</td><th>Blood Type</th><td>{{ $patient->blood_type ?? '—' }}</td></tr>
-            <tr><th>Date of Birth</th><td>{{ $patient->user?->date_of_birth?->format('M d, Y') }}</td><th>Contact</th><td>{{ $patient->contact_number ?? '—' }}</td></tr>
+            <tr><th>Date of Birth</th><td>{{ $patient->user?->date_of_birth?->format('M d, Y') }}</td><th>Age</th><td>{{ $patient->user?->age() !== null ? $patient->user->age().' yrs' : '—' }}</td></tr>
             <tr><th>Address</th><td colspan="3">{{ $patient->address ?? '—' }}</td></tr>
         </table>
     </div>

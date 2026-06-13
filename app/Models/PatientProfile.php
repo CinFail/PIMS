@@ -13,7 +13,7 @@ class PatientProfile extends Model
     protected $primaryKey = 'patient_id';
 
     protected $fillable = [
-        'user_id', 'sex', 'contact_number', 'address',
+        'user_id', 'sex', 'address',
         'emergency_contact_name', 'emergency_contact_number', 'blood_type',
     ];
 
@@ -40,5 +40,10 @@ class PatientProfile extends Model
     public function labRequests(): HasMany
     {
         return $this->hasMany(LabRequest::class, 'patient_id', 'patient_id');
+    }
+
+    public function labAppointments(): HasMany
+    {
+        return $this->hasMany(LabAppointment::class, 'patient_id', 'patient_id');
     }
 }

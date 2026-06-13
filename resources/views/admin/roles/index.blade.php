@@ -11,7 +11,11 @@
                 <td>{{ $role->display_name }} <span class="muted">({{ $role->name }})</span></td>
                 <td>{{ $role->permissions_count }}</td>
                 <td class="row-actions">
-                    <a href="{{ route('admin.roles.edit', $role->role_id) }}" class="btn btn-small">Edit Permissions</a>
+                    @if($role->name === 'super_admin')
+                        <span class="muted" title="Super Admin permissions are system-managed and cannot be changed.">Protected</span>
+                    @else
+                        <a href="{{ route('admin.roles.edit', $role->role_id) }}" class="btn btn-small">Edit Permissions</a>
+                    @endif
                 </td>
             </tr>
         @endforeach

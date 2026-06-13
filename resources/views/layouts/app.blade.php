@@ -33,9 +33,10 @@
         @if($role === 'patient')
             <div class="group-label">Patient</div>
             <a href="{{ route('patient.profile.edit') }}" class="{{ request()->routeIs('patient.profile.*') ? 'active' : '' }}">Update Information</a>
-            <a href="{{ route('patient.appointments.create') }}" class="{{ request()->routeIs('patient.appointments.create') ? 'active' : '' }}">Book an Appointment</a>
+            <a href="{{ route('patient.appointments.create') }}" class="{{ request()->routeIs('patient.appointments.create') ? 'active' : '' }}">Book a Doctor Appointment</a>
+            <a href="{{ route('patient.lab.request.create') }}" class="{{ request()->routeIs('patient.lab.request.*') ? 'active' : '' }}">Request a Lab Test</a>
             <a href="{{ route('patient.appointments.index') }}" class="{{ request()->routeIs('patient.appointments.index') ? 'active' : '' }}">My Appointments</a>
-            <a href="{{ route('patient.lab.index') }}" class="{{ request()->routeIs('patient.lab.*') ? 'active' : '' }}">Request a Lab Result</a>
+            <a href="{{ route('patient.lab.index') }}" class="{{ request()->routeIs('patient.lab.index') ? 'active' : '' }}">My Lab Results</a>
         @endif
 
         @if($role === 'doctor')

@@ -13,6 +13,15 @@
                 {{ $req->patient?->user?->fullName() }} —
                 <span class="tag">{{ $req->status }}</span>
                 <span class="muted">({{ $req->request_at?->format('M d, Y g:i A') }})</span>
+                <br>
+                @if($req->doctor)
+                    <span class="muted">Referred by Dr. {{ $req->doctor?->user?->fullName() }}</span>
+                @else
+                    <span class="muted">Patient self-requested (no doctor consultation)</span>
+                @endif
+                @if($req->labAppointment)
+                    &mdash; <span class="muted">Lab appointment: {{ $req->labAppointment->scheduled_at?->format('M d, Y g:i A') }}</span>
+                @endif
                 <table>
                     <tr><th>Test</th><th>Status</th><th>Result</th><th></th></tr>
                     @foreach($req->items as $item)

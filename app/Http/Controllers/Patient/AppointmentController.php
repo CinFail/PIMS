@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Appointment;
 use App\Models\AppointmentStatus;
 use App\Models\DoctorDutySession;
+use App\Models\LabAppointment;
 use App\Models\LabRequest;
 use App\Models\LabRequestItem;
 use App\Models\LabTest;
@@ -17,7 +18,10 @@ use Illuminate\Support\Facades\DB;
 
 class AppointmentController extends Controller
 {
-    /** List the patient's own appointments. */
+    /**
+     * List the patient's own appointments. A single page, split into
+     * Doctor Appointments and Laboratory Appointments.
+     */
     public function index()
     {
         $patient = $this->patient();
@@ -28,7 +32,13 @@ class AppointmentController extends Controller
             ->orderByDesc('appointment_at')
             ->get();
 
-        return view('patient.appointments', compact('appointments'));
+        $labAppointments = LabAppointment::with('labRequest.items.test')
+            ->where('patient_id', $patient->patient_id)
+            ->where('is_voided', 0)
+            ->orderByDesc('scheduled_at')
+            ->get();
+
+        return view('patient.appointments', compact('appointments', 'labAppointments'));
     }
 
     /** Show the booking form: active doctors, open slots, and lab tests. */

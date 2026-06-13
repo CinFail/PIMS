@@ -20,7 +20,11 @@
         </div>
         <div class="form-group">
             <label for="mobile_number">Mobile Number</label>
-            <input type="text" name="mobile_number" id="mobile_number" value="{{ old('mobile_number') }}">
+            <input type="text" name="mobile_number" id="mobile_number" value="{{ old('mobile_number') }}"
+                   inputmode="numeric" maxlength="11" pattern="[0-9]{11}"
+                   title="Numbers only — exactly 11 digits"
+                   oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+            <p class="help">Numbers only, exactly 11 digits (e.g. 09171234567).</p>
         </div>
         <div class="form-group">
             <label for="date_of_birth">Date of Birth</label>
@@ -33,10 +37,6 @@
                 <option value="Male" @selected(old('sex')=='Male')>Male</option>
                 <option value="Female" @selected(old('sex')=='Female')>Female</option>
             </select>
-        </div>
-        <div class="form-group">
-            <label for="contact_number">Contact Number</label>
-            <input type="text" name="contact_number" id="contact_number" value="{{ old('contact_number') }}">
         </div>
         <div class="form-group">
             <label for="address">Address</label>

@@ -102,6 +102,16 @@ class User extends Authenticatable
         return trim($this->first_name.' '.$this->last_name);
     }
 
+    /**
+     * Age in whole years, computed dynamically from date_of_birth.
+     * Returns null when no date of birth is on file. Age is never
+     * stored — it is always derived so it stays correct over time.
+     */
+    public function age(): ?int
+    {
+        return $this->date_of_birth ? $this->date_of_birth->age : null;
+    }
+
     /** Does the user have the given role name? e.g. hasRole('doctor') */
     public function hasRole(string $roleName): bool
     {

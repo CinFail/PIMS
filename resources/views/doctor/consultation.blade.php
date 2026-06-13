@@ -3,7 +3,11 @@
 @section('content')
     <h1>Consultation</h1>
     <p class="page-subtitle">
-        Patient: {{ $consultation->patient?->user?->fullName() }} &mdash;
+        Patient: {{ $consultation->patient?->user?->fullName() }}
+        @if($consultation->patient?->user?->age() !== null)
+            ({{ $consultation->patient->user->age() }} yrs)
+        @endif
+        &mdash;
         {{ $consultation->consultation_at?->format('M d, Y g:i A') }}
     </p>
 

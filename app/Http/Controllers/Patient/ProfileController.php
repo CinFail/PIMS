@@ -6,6 +6,7 @@ use App\Helpers\AuditLogger;
 use App\Http\Controllers\Controller;
 use App\Models\PatientMedicalHistory;
 use App\Models\PatientProfile;
+use App\Rules\MobileNumber;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -32,13 +33,12 @@ class ProfileController extends Controller
         $data = $request->validate([
             'first_name'               => ['required', 'string', 'max:50'],
             'last_name'                => ['required', 'string', 'max:50'],
-            'mobile_number'            => ['nullable', 'string', 'max:20'],
+            'mobile_number'            => ['nullable', new MobileNumber],
             'sex'                      => ['nullable', 'in:Male,Female'],
-            'contact_number'           => ['nullable', 'string', 'max:20'],
             'address'                  => ['nullable', 'string'],
             'blood_type'               => ['nullable', 'string', 'max:5'],
             'emergency_contact_name'   => ['nullable', 'string', 'max:100'],
-            'emergency_contact_number' => ['nullable', 'string', 'max:20'],
+            'emergency_contact_number' => ['nullable', new MobileNumber],
             'allergies'                => ['nullable', 'string'],
             'chronic_conditions'       => ['nullable', 'string'],
             'past_surgeries'           => ['nullable', 'string'],
@@ -59,7 +59,6 @@ class ProfileController extends Controller
 
         $profile->update([
             'sex'                      => $data['sex'] ?? null,
-            'contact_number'           => $data['contact_number'] ?? null,
             'address'                  => $data['address'] ?? null,
             'blood_type'               => $data['blood_type'] ?? null,
             'emergency_contact_name'   => $data['emergency_contact_name'] ?? null,

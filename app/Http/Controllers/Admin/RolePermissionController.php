@@ -18,20 +18,31 @@ class RolePermissionController extends Controller
         return view('admin.roles.index', compact('roles'));
     }
 
-    /** Show the checkbox grid of permissions for one role. */
+    /** Show the checkbox grid of permissions for one role. Super Admin is read-only. */
     public function edit(int $roleId)
     {
         $role = Role::with('permissions')->findOrFail($roleId);
+
+        if ($role->name === 'super_admin') {
+            return redirect()->route('admin.roles.index')
+                ->withErrors(['guard' => 'Super Admin permissions are system-managed and cannot be edited.']);
+        }
+
         $permissions = Permission::orderBy('name')->get();
         $assigned = $role->permissions->pluck('permission_id')->all();
 
         return view('admin.roles.edit', compact('role', 'permissions', 'assigned'));
     }
 
-    /** Save the chosen permissions for the role. Change is audit-logged. */
+    /** Save the chosen permissions for the role. Change is audit-logged. Super Admin is immutable. */
     public function update(Request $request, int $roleId)
     {
         $role = Role::findOrFail($roleId);
+
+        if ($role->name === 'super_admin') {
+            return redirect()->route('admin.roles.index')
+                ->withErrors(['guard' => 'Super Admin permissions are system-managed and cannot be modified.']);
+        }
 
         $data = $request->validate([
             'permissions'   => ['nullable', 'array'],

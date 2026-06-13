@@ -16,7 +16,7 @@ class LabController extends Controller
     /** Scheduled laboratory tests: pending / processing lab requests. */
     public function index()
     {
-        $requests = LabRequest::with(['patient.user', 'items.test', 'items.result'])
+        $requests = LabRequest::with(['patient.user', 'items.test', 'items.result', 'doctor.user', 'labAppointment'])
             ->where('is_voided', 0)
             ->whereIn('status', ['Pending', 'Processing'])
             ->orderBy('request_at')

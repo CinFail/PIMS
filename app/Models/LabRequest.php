@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class LabRequest extends Model
 {
@@ -32,5 +33,10 @@ class LabRequest extends Model
     public function items(): HasMany
     {
         return $this->hasMany(LabRequestItem::class, 'lab_request_id', 'lab_request_id');
+    }
+
+    public function labAppointment(): HasOne
+    {
+        return $this->hasOne(LabAppointment::class, 'lab_request_id', 'lab_request_id');
     }
 }
