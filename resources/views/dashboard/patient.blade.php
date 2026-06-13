@@ -2,7 +2,6 @@
 @section('title', 'Dashboard')
 @section('content')
     <h1>Welcome, {{ auth()->user()->first_name }}</h1>
-    <p class="page-subtitle">Here is a quick look at your account.</p>
 
     <h2>Quick Actions</h2>
     <div class="btn-row">

@@ -2,10 +2,9 @@
 @section('title', 'Patient Records')
 @section('content')
     <h1>Patient Records</h1>
-    <p class="page-subtitle">The patient database. Search by name or email.</p>
 
     <form action="{{ route('doctor.patients.index') }}" method="GET" class="search-form">
-        <input type="text" name="q" value="{{ $search }}" placeholder="Search patients...">
+        <input type="text" name="q" value="{{ $search }}" placeholder="Search by name or email...">
         <button type="submit" class="btn"><i class="bi bi-search"></i> Search</button>
     </form>
 
@@ -15,6 +14,7 @@
             <p>No patients found.</p>
         </div>
     @else
+        <p class="result-count">Showing {{ $patients->count() }} of {{ $patients->total() }} patients</p>
         <div class="table-card">
             <table>
                 <tr><th>Name</th><th>Email</th><th>Age</th><th>Sex</th><th>Blood Type</th><th></th></tr>

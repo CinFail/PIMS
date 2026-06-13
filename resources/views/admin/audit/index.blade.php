@@ -2,23 +2,24 @@
 @section('title', 'Audit Trail')
 @section('content')
     <h1>Full Audit Trail</h1>
-    <p class="page-subtitle">Every recorded action in the system.</p>
 
-    <form action="{{ route('admin.audit.index') }}" method="GET" class="search-form" style="max-width:none;flex-wrap:wrap;">
-        <select name="module" style="max-width:200px;">
+    <form action="{{ route('admin.audit.index') }}" method="GET" class="filter-bar">
+        <select name="module">
             <option value="">All Modules</option>
             @foreach($modules as $m)
-                <option value="{{ $m }}" @selected($module==$m)>{{ $m }}</option>
+                <option value="{{ $m }}" @selected($module == $m)>{{ $m }}</option>
             @endforeach
         </select>
-        <select name="action" style="max-width:160px;">
+        <select name="action">
             <option value="">All Actions</option>
             @foreach(['CREATE','UPDATE','DELETE','VIEW','LOGIN','LOGOUT','VOID','APPROVE','UPLOAD','REQUEST'] as $a)
-                <option value="{{ $a }}" @selected($action==$a)>{{ $a }}</option>
+                <option value="{{ $a }}" @selected($action == $a)>{{ $a }}</option>
             @endforeach
         </select>
         <button type="submit" class="btn"><i class="bi bi-funnel"></i> Filter</button>
     </form>
+
+    <p class="result-count">Showing {{ $logs->count() }} of {{ $logs->total() }} entries</p>
 
     <div class="table-card">
         <table>

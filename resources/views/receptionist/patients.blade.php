@@ -2,7 +2,6 @@
 @section('title', 'Patient Information')
 @section('content')
     <h1>Patient Information</h1>
-    <p class="page-subtitle">Look up patients during check-in.</p>
 
     <div class="btn-row">
         <a href="{{ route('receptionist.patients.create') }}" class="btn">
@@ -11,7 +10,7 @@
     </div>
 
     <form action="{{ route('receptionist.patients.index') }}" method="GET" class="search-form">
-        <input type="text" name="q" value="{{ $search }}" placeholder="Search patients...">
+        <input type="text" name="q" value="{{ $search }}" placeholder="Search by name or email...">
         <button type="submit" class="btn"><i class="bi bi-search"></i> Search</button>
     </form>
 
@@ -21,6 +20,7 @@
             <p>No patients found.</p>
         </div>
     @else
+        <p class="result-count">Showing {{ $patients->count() }} of {{ $patients->total() }} patients</p>
         <div class="table-card">
             <table>
                 <tr><th>Name</th><th>Email</th><th>Mobile</th><th></th></tr>

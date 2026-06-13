@@ -127,7 +127,6 @@
 
         @if($errors->any())
             <div class="alert alert-error">
-                <strong>Please fix the following:</strong>
                 <ul>
                     @foreach($errors->all() as $error)
                         <li>{{ $error }}</li>
@@ -141,14 +140,51 @@
 </div>
 
 <script>
-/* Wrap standalone tables in a card container for rounded-corner styling */
 document.addEventListener('DOMContentLoaded', function () {
+
+    /* 1 — Wrap bare tables in card containers for rounded-corner styling */
     document.querySelectorAll('.content > table').forEach(function (t) {
         var d = document.createElement('div');
         d.className = 'table-card';
         t.parentNode.insertBefore(d, t);
         d.appendChild(t);
     });
+
+    /* 2 — Mobile number mask: formats as 09XX-XXX-XXXX while typing */
+    function fmtMobile(raw) {
+        var d = raw.replace(/\D/g, '').substring(0, 11);
+        if (d.length > 7) return d.substring(0, 4) + '-' + d.substring(4, 7) + '-' + d.substring(7);
+        if (d.length > 4) return d.substring(0, 4) + '-' + d.substring(4);
+        return d;
+    }
+    document.querySelectorAll('[data-mobile]').forEach(function (el) {
+        if (el.value) el.value = fmtMobile(el.value);
+        el.addEventListener('input', function () { this.value = fmtMobile(this.value); });
+        el.addEventListener('keydown', function (e) {
+            if (e.key.length === 1 && !/\d/.test(e.key) && !e.ctrlKey && !e.metaKey) e.preventDefault();
+        });
+    });
+    /* Strip formatting dashes before submit so backend receives 11 plain digits */
+    document.querySelectorAll('form').forEach(function (f) {
+        f.addEventListener('submit', function () {
+            f.querySelectorAll('[data-mobile]').forEach(function (el) {
+                el.value = el.value.replace(/\D/g, '');
+            });
+        });
+    });
+
+    /* 3 — Admin create-user: show doctor/medtech fields only when relevant role is chosen */
+    var roleSelect = document.getElementById('role');
+    var doctorFields = document.getElementById('doctor-fields');
+    if (roleSelect && doctorFields) {
+        function syncDoctorFields() {
+            var v = roleSelect.value;
+            doctorFields.style.display = (v === 'doctor' || v === 'med_tech') ? '' : 'none';
+        }
+        roleSelect.addEventListener('change', syncDoctorFields);
+        syncDoctorFields();
+    }
+
 });
 </script>
 </body>
