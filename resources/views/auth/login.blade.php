@@ -10,7 +10,7 @@
 <body class="auth-page">
 <div class="auth-wrap">
     <div style="text-align:center;margin-bottom:24px;">
-        <img src="{{ asset('images/logo.png') }}" alt="EGBC Diagnostic and Medical Services"
+        <img src="{{ asset('images/logo.jpg') }}" alt="EGBC Diagnostic and Medical Services"
              style="height:80px;width:auto;display:inline-block;">
     </div>
 

@@ -16,7 +16,7 @@
 
 <div class="topbar">
     <div class="brand">
-        <img src="{{ asset('images/logo.png') }}" alt="EGBC Diagnostic and Medical Services" class="brand-logo">
+        <img src="{{ asset('images/logo.jpg') }}" alt="EGBC Diagnostic and Medical Services" class="brand-logo">
     </div>
     <div class="user-box">
         {{ $user?->fullName() }}
