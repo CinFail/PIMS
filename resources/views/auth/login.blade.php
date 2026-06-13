@@ -9,8 +9,10 @@
 </head>
 <body class="auth-page">
 <div class="auth-wrap">
-    <h1>PIMS</h1>
-    <p class="page-subtitle">Clinic Patient Information Management System</p>
+    <div style="text-align:center;margin-bottom:24px;">
+        <img src="{{ asset('images/logo.png') }}" alt="EGBC Diagnostic and Medical Services"
+             style="height:80px;width:auto;display:inline-block;">
+    </div>
 
     @if($errors->any())
         <div class="alert alert-error">

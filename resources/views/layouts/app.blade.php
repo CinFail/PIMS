@@ -15,7 +15,9 @@
 @endphp
 
 <div class="topbar">
-    <div class="brand">PIMS</div>
+    <div class="brand">
+        <img src="{{ asset('images/logo.png') }}" alt="EGBC Diagnostic and Medical Services" class="brand-logo">
+    </div>
     <div class="user-box">
         {{ $user?->fullName() }}
         <span class="role-badge">{{ $user?->roles->first()->display_name ?? 'User' }}</span>
@@ -187,5 +189,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
 });
 </script>
+@stack('scripts')
 </body>
 </html>

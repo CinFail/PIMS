@@ -13,13 +13,14 @@
     @else
         <div class="table-card">
             <table>
-                <tr><th>Test</th><th>Result</th><th>Status</th><th>Soft Copy</th></tr>
+                <tr><th>Test</th><th>Result</th><th>Status</th><th>Released</th><th>Soft Copy</th></tr>
                 @foreach($results as $r)
                     @php($softCopy = $requestStatus[$r->result_id] ?? null)
                     <tr>
                         <td>{{ $r->requestItem?->test?->test_name }}</td>
                         <td>{{ $r->result_value ?? '—' }} {{ $r->unit }}</td>
                         <td>{{ $r->workflow_status }}</td>
+                        <td>{{ $r->created_at?->format('M d, g:i A') ?? '—' }}</td>
                         <td>
                             @if($softCopy === 'Fulfilled' && $r->result_file_path)
                                 <a href="{{ asset('storage/'.$r->result_file_path) }}" class="btn btn-small" target="_blank">

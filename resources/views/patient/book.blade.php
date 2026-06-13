@@ -34,9 +34,20 @@
             @endforeach
         </div>
 
-        <div class="form-group">
-            <label for="reason_for_visit">Reason for Visit</label>
-            <textarea name="reason_for_visit" id="reason_for_visit">{{ old('reason_for_visit') }}</textarea>
+        <div class="form-grid-2">
+            <div class="form-group">
+                <label for="preferred_time">Preferred Time</label>
+                <input type="time" name="preferred_time" id="preferred_time"
+                       value="{{ old('preferred_time') }}"
+                       min="08:00" max="18:00" step="1800">
+                @error('preferred_time')
+                    <span class="field-error">{{ $message }}</span>
+                @enderror
+            </div>
+            <div class="form-group">
+                <label for="reason_for_visit">Reason for Visit</label>
+                <textarea name="reason_for_visit" id="reason_for_visit">{{ old('reason_for_visit') }}</textarea>
+            </div>
         </div>
 
         <h2>Laboratory Tests</h2>
