@@ -13,7 +13,7 @@
         </a>
     </div>
 
-    {{-- ── Doctor Appointments ── --}}
+    {{-- Doctor Appointments --}}
     <h2>Doctor Appointments</h2>
     @if($appointments->isEmpty())
         <div class="empty-state">
@@ -36,7 +36,7 @@
         </div>
     @endif
 
-    {{-- ── Laboratory Appointments ── --}}
+    {{-- Laboratory Appointments --}}
     <h2>Laboratory Appointments</h2>
     @if($labAppointments->isEmpty())
         <div class="empty-state">

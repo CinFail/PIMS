@@ -39,9 +39,7 @@ use App\Http\Controllers\Admin\DoctorScheduleController;
  | into controller methods by name, so they must be the same.
  */
 
-// ---------------------------------------------------------------
 // Public routes
-// ---------------------------------------------------------------
 Route::get('/', fn () => redirect()->route('login'));
 
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
@@ -50,15 +48,13 @@ Route::post('/login', [LoginController::class, 'login']);
 Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
 Route::post('/register', [RegisterController::class, 'register']);
 
-// ---------------------------------------------------------------
 // Authenticated routes
-// ---------------------------------------------------------------
 Route::middleware('auth')->group(function () {
 
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    // ----------------------- PATIENT -----------------------
+    // Patient
     Route::middleware('role:patient')->prefix('patient')->name('patient.')->group(function () {
         Route::get('profile', [PatientProfileController::class, 'edit'])->name('profile.edit');
         Route::put('profile', [PatientProfileController::class, 'update'])->name('profile.update');
@@ -76,7 +72,7 @@ Route::middleware('auth')->group(function () {
         Route::post('lab-tests/request', [PatientLabTestController::class, 'store'])->name('lab.request.store');
     });
 
-    // ----------------------- DOCTOR ------------------------
+    // Doctor
     Route::middleware('role:doctor')->prefix('doctor')->name('doctor.')->group(function () {
         Route::get('appointments', [DoctorAppointmentController::class, 'index'])->name('appointments.index');
 
@@ -89,7 +85,7 @@ Route::middleware('auth')->group(function () {
         Route::post('consultations/{consultationId}/prescription', [ConsultationController::class, 'storePrescription'])->name('consultation.prescription');
     });
 
-    // ----------------------- MEDTECH -----------------------
+    // MedTech
     Route::middleware('role:med_tech')->prefix('medtech')->name('medtech.')->group(function () {
         Route::get('lab', [LabController::class, 'index'])->name('lab.index');
         Route::get('lab/items/{itemId}/result', [LabController::class, 'createResult'])->name('lab.result.create');
@@ -99,7 +95,7 @@ Route::middleware('auth')->group(function () {
         Route::post('soft-copy/{requestId}/fulfill', [SoftCopyController::class, 'fulfill'])->name('softcopy.fulfill');
     });
 
-    // -------------------- RECEPTIONIST ---------------------
+    // Receptionist
     Route::middleware('role:receptionist')->prefix('receptionist')->name('receptionist.')->group(function () {
         Route::get('patients', [ReceptionistPatientController::class, 'index'])->name('patients.index');
         Route::get('patients/new', [ReceptionistPatientController::class, 'create'])->name('patients.create');
@@ -107,7 +103,7 @@ Route::middleware('auth')->group(function () {
         Route::get('patients/{patientId}', [ReceptionistPatientController::class, 'show'])->name('patients.show');
     });
 
-    // ------------------- SUPER ADMIN -----------------------
+    // Super Admin
     Route::middleware('role:super_admin')->prefix('admin')->name('admin.')->group(function () {
         // Role permissions
         Route::get('roles', [RolePermissionController::class, 'index'])->name('roles.index');

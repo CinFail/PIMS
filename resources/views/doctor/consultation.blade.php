@@ -16,7 +16,7 @@
         </a>
     </div>
 
-    {{-- ── Diagnoses ── --}}
+    {{-- Diagnoses --}}
     <h2>Diagnoses</h2>
     @if($consultation->diagnoses->where('is_voided', 0)->isEmpty())
         <p class="muted">No diagnoses added yet.</p>
@@ -65,7 +65,7 @@
         </form>
     </div>
 
-    {{-- ── Prescription ── --}}
+    {{-- Prescription --}}
     <h2>Prescription</h2>
     @if($consultation->prescription && $consultation->prescription->items->count())
         <div class="table-card">
@@ -139,7 +139,7 @@
         </form>
     </div>
 
-    {{-- ── Previous Prescriptions ── --}}
+    {{-- Previous Prescriptions --}}
     @if($previousPrescriptions->isNotEmpty())
         <h2>Medication History</h2>
         @foreach($previousPrescriptions as $presc)

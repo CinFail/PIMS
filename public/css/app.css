@@ -3,7 +3,7 @@
    Colors: Cyan topbar / Pink sidebar / White cards / Teal tables
    ============================================================= */
 
-/* ── Custom Properties ─────────────────────────────────────── */
+/* Custom Properties */
 :root {
     --topbar-bg:      #b8d8ee;
     --sidebar-bg:     #ebcee1;
@@ -23,7 +23,7 @@
     --topbar-h:       72px;
 }
 
-/* ── Reset & Base ───────────────────────────────────────────── */
+/* Reset & Base */
 *, *::before, *::after { box-sizing: border-box; }
 
 body {
@@ -38,7 +38,7 @@ body {
 a { color: var(--primary); text-decoration: none; }
 a:hover { text-decoration: underline; }
 
-/* ── Headings ───────────────────────────────────────────────── */
+/* Headings */
 h1 { font-size: 26px; font-weight: 700; margin: 0 0 4px; color: var(--text); }
 h2 {
     font-size: 15px; font-weight: 600; margin: 28px 0 12px;
@@ -49,7 +49,7 @@ p  { margin: 0 0 12px; }
 
 .page-subtitle { color: var(--text-muted); margin: 0 0 24px; font-size: 13.5px; }
 
-/* ── Layout ─────────────────────────────────────────────────── */
+/* Layout */
 .topbar {
     background: var(--topbar-bg);
     padding: 0 24px;
@@ -88,7 +88,7 @@ p  { margin: 0 0 12px; }
     min-height: calc(100vh - var(--topbar-h));
 }
 
-/* ── Sidebar ────────────────────────────────────────────────── */
+/* Sidebar */
 .sidebar {
     width: var(--sidebar-w);
     background: var(--sidebar-bg);
@@ -140,7 +140,7 @@ p  { margin: 0 0 12px; }
     color: var(--text-muted);
 }
 
-/* ── Main Content ───────────────────────────────────────────── */
+/* Main Content */
 .content {
     flex: 1;
     padding: 28px 32px;
@@ -148,7 +148,7 @@ p  { margin: 0 0 12px; }
     min-width: 0;
 }
 
-/* ── Cards / Stat Cards ─────────────────────────────────────── */
+/* Cards / Stat Cards */
 .cards {
     display: flex;
     flex-wrap: wrap;
@@ -232,7 +232,7 @@ a.quick-link i { color: var(--text-muted); font-size: 14px; width: 16px; text-al
     box-shadow: var(--shadow-card);
 }
 
-/* ── Tables ─────────────────────────────────────────────────── */
+/* Tables */
 
 /* JS will add .table-card wrapper around standalone tables */
 .table-card {
@@ -293,7 +293,7 @@ tr:hover td { background: #EFF6FF; transition: background .1s; }
     padding: 16px;
 }
 
-/* ── Buttons ─────────────────────────────────────────────────── */
+/* Buttons */
 .btn {
     display: inline-flex;
     align-items: center;
@@ -353,7 +353,7 @@ tr:hover td { background: #EFF6FF; transition: background .1s; }
     margin-bottom: 24px;
 }
 
-/* ── Forms ───────────────────────────────────────────────────── */
+/* Forms */
 .form-group { margin-bottom: 16px; max-width: 700px; }
 
 label {
@@ -435,7 +435,7 @@ textarea { min-height: 80px; resize: vertical; }
 .search-form input { flex: 1; }
 .search-form .form-group { margin: 0; max-width: none; }
 
-/* ── Alerts ──────────────────────────────────────────────────── */
+/* Alerts */
 .alert {
     border-radius: var(--radius-sm);
     padding: 12px 16px;
@@ -458,7 +458,7 @@ textarea { min-height: 80px; resize: vertical; }
 
 .alert ul { margin: 6px 0 0 18px; padding: 0; }
 
-/* ── Badges / Tags ───────────────────────────────────────────── */
+/* Badges / Tags */
 .tag {
     display: inline-flex;
     align-items: center;
@@ -498,7 +498,7 @@ textarea { min-height: 80px; resize: vertical; }
     letter-spacing: .5px;
 }
 
-/* ── Pagination ──────────────────────────────────────────────── */
+/* Pagination */
 .pagination-wrap { margin-top: 16px; }
 
 .pagination-wrap nav > div {
@@ -532,12 +532,12 @@ textarea { min-height: 80px; resize: vertical; }
 
 .pagination-wrap span.muted { color: var(--text-muted); }
 
-/* ── Utilities ───────────────────────────────────────────────── */
+/* Utilities */
 .muted { color: var(--text-muted); }
 .inline-form { display: inline; }
 .row-actions { white-space: nowrap; }
 
-/* ── Empty State ─────────────────────────────────────────────── */
+/* Empty State */
 .empty-state {
     display: flex;
     flex-direction: column;
@@ -560,7 +560,7 @@ textarea { min-height: 80px; resize: vertical; }
 
 .empty-state p { margin: 0; font-size: 14px; }
 
-/* ── Auth Pages (login / register) ──────────────────────────── */
+/* Auth Pages */
 body.auth-page {
     background: linear-gradient(135deg, #F8D8DE 0%, #C5E8F8 100%);
     min-height: 100vh;
@@ -617,14 +617,14 @@ body.auth-page {
 /* Auth full-width button */
 .auth-wrap .btn-full { width: 100%; justify-content: center; }
 
-/* ── Responsive helpers ──────────────────────────────────────── */
+/* Responsive */
 @media (max-width: 768px) {
     .sidebar { display: none; }
     .content { padding: 20px 16px; }
     .cards   { flex-direction: column; }
 }
 
-/* ── Form Grid & Inline Validation ──────────────────────────── */
+/* Form Grid & Inline Validation */
 
 /* 2-column responsive grid for form fields */
 .form-grid-2 {
