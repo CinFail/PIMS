@@ -17,7 +17,10 @@
                     <label for="t{{ $t->lab_test_id }}">{{ $t->test_name }} <span class="muted">({{ $t->category?->category_name }})</span></label>
                 </div>
             @empty
-                <p class="muted">No lab tests are configured yet. Please check back later.</p>
+                <div class="empty-state" style="padding:32px 24px;">
+                    <i class="bi bi-eyedropper"></i>
+                    <p>No lab tests are configured yet. Please check back later.</p>
+                </div>
             @endforelse
         </div>
 
@@ -36,7 +39,7 @@
                 <p class="help">Anything the laboratory should know (e.g. fasting, symptoms).</p>
             </div>
 
-            <button type="submit" class="btn">Submit Lab Request</button>
+            <button type="submit" class="btn"><i class="bi bi-send"></i> Submit Lab Request</button>
         @endif
     </form>
 @endsection

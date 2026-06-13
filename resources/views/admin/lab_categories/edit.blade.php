@@ -2,7 +2,13 @@
 @section('title', 'Edit Category')
 @section('content')
     <h1>Edit Lab Category</h1>
-    <a href="{{ route('admin.lab-categories.index') }}" class="btn btn-outline">Back</a>
+
+    <div class="btn-row">
+        <a href="{{ route('admin.lab-categories.index') }}" class="btn btn-outline">
+            <i class="bi bi-arrow-left"></i> Back
+        </a>
+    </div>
+
     <form action="{{ route('admin.lab-categories.update', $category->lab_category_id) }}" method="POST">
         @csrf @method('PUT')
         <div class="form-group">
@@ -13,6 +19,6 @@
             <label for="description">Description</label>
             <textarea name="description" id="description">{{ old('description', $category->description) }}</textarea>
         </div>
-        <button type="submit" class="btn">Update</button>
+        <button type="submit" class="btn"><i class="bi bi-save"></i> Update</button>
     </form>
 @endsection

@@ -5,11 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>PIMS - Login</title>
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 </head>
-<body>
+<body class="auth-page">
 <div class="auth-wrap">
     <h1>PIMS</h1>
-    <p class="page-subtitle" style="text-align:center;">Clinic Patient Information Management System</p>
+    <p class="page-subtitle">Clinic Patient Information Management System</p>
 
     @if($errors->any())
         <div class="alert alert-error">
@@ -24,18 +25,24 @@
     <form action="{{ route('login') }}" method="POST">
         @csrf
         <div class="form-group">
-            <label for="email">Email</label>
-            <input type="email" name="email" id="email" value="{{ old('email') }}" required autofocus>
+            <div class="input-icon-wrap">
+                <i class="bi bi-envelope"></i>
+                <input type="email" name="email" id="email" value="{{ old('email') }}"
+                       placeholder="Email" required autofocus>
+            </div>
         </div>
         <div class="form-group">
-            <label for="password">Password</label>
-            <input type="password" name="password" id="password" required>
+            <div class="input-icon-wrap">
+                <i class="bi bi-lock"></i>
+                <input type="password" name="password" id="password"
+                       placeholder="Password" required>
+            </div>
         </div>
-        <div class="checkbox-row">
+        <div class="checkbox-row" style="margin-bottom:16px;">
             <input type="checkbox" name="remember" id="remember" value="1">
             <label for="remember">Remember me</label>
         </div>
-        <button type="submit" class="btn" style="width:100%;">Log In</button>
+        <button type="submit" class="btn btn-full">Log In</button>
     </form>
 
     <div class="center-link">

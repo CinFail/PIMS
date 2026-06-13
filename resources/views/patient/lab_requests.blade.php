@@ -6,50 +6,56 @@
 
     <h2>My Results</h2>
     @if($results->isEmpty())
-        <p class="muted">You have no laboratory results yet.</p>
+        <div class="empty-state">
+            <i class="bi bi-file-earmark-medical"></i>
+            <p>You have no laboratory results yet.</p>
+        </div>
     @else
-        <table>
-            <tr><th>Test</th><th>Result</th><th>Status</th><th>Soft Copy</th></tr>
-            @foreach($results as $r)
-                @php($softCopy = $requestStatus[$r->result_id] ?? null)
-                <tr>
-                    <td>{{ $r->requestItem?->test?->test_name }}</td>
-                    <td>{{ $r->result_value ?? '—' }} {{ $r->unit }}</td>
-                    <td>{{ $r->workflow_status }}</td>
-                    <td>
-                        @if($softCopy === 'Fulfilled' && $r->result_file_path)
-                            {{-- MedTech has fulfilled the request: enable Download. --}}
-                            <a href="{{ asset('storage/'.$r->result_file_path) }}" class="btn btn-small" target="_blank">Download</a>
-                        @elseif($softCopy === 'Pending')
-                            {{-- Request is waiting on the MedTech. --}}
-                            <span class="muted">Requested — awaiting MedTech</span>
-                        @else
-                            {{-- Download hidden by default; only the request button shows. --}}
-                            <form action="{{ route('patient.lab.store') }}" method="POST" class="inline-form">
-                                @csrf
-                                <input type="hidden" name="result_id" value="{{ $r->result_id }}">
-                                <button type="submit" class="btn btn-small">Request Soft Copy</button>
-                            </form>
-                        @endif
-                    </td>
-                </tr>
-            @endforeach
-        </table>
+        <div class="table-card">
+            <table>
+                <tr><th>Test</th><th>Result</th><th>Status</th><th>Soft Copy</th></tr>
+                @foreach($results as $r)
+                    @php($softCopy = $requestStatus[$r->result_id] ?? null)
+                    <tr>
+                        <td>{{ $r->requestItem?->test?->test_name }}</td>
+                        <td>{{ $r->result_value ?? '—' }} {{ $r->unit }}</td>
+                        <td>{{ $r->workflow_status }}</td>
+                        <td>
+                            @if($softCopy === 'Fulfilled' && $r->result_file_path)
+                                <a href="{{ asset('storage/'.$r->result_file_path) }}" class="btn btn-small" target="_blank">
+                                    <i class="bi bi-download"></i> Download
+                                </a>
+                            @elseif($softCopy === 'Pending')
+                                <span class="muted">Requested — awaiting MedTech</span>
+                            @else
+                                <form action="{{ route('patient.lab.store') }}" method="POST" class="inline-form">
+                                    @csrf
+                                    <input type="hidden" name="result_id" value="{{ $r->result_id }}">
+                                    <button type="submit" class="btn btn-small btn-outline">Request Soft Copy</button>
+                                </form>
+                            @endif
+                        </td>
+                    </tr>
+                @endforeach
+            </table>
+        </div>
     @endif
 
     <h2>My Requests</h2>
     @if($myRequests->isEmpty())
         <p class="muted">You have not requested any soft copies yet.</p>
     @else
-        <table>
-            <tr><th>Requested</th><th>Test</th><th>Status</th></tr>
-            @foreach($myRequests as $req)
-                <tr>
-                    <td>{{ $req->requested_at?->format('M d, Y g:i A') }}</td>
-                    <td>{{ $req->result?->requestItem?->test?->test_name }}</td>
-                    <td>{{ $req->status }}</td>
-                </tr>
-            @endforeach
-        </table>
+        <div class="table-card">
+            <table>
+                <tr><th>Requested</th><th>Test</th><th>Status</th></tr>
+                @foreach($myRequests as $req)
+                    <tr>
+                        <td>{{ $req->requested_at?->format('M d, Y g:i A') }}</td>
+                        <td>{{ $req->result?->requestItem?->test?->test_name }}</td>
+                        <td>{{ $req->status }}</td>
+                    </tr>
+                @endforeach
+            </table>
+        </div>
     @endif
 @endsection

@@ -5,23 +5,29 @@
     <p class="page-subtitle">Pending and in-progress lab requests. Upload a result for each test item.</p>
 
     @if($requests->isEmpty())
-        <p class="muted">No pending lab requests.</p>
+        <div class="empty-state">
+            <i class="bi bi-eyedropper"></i>
+            <p>No pending lab requests.</p>
+        </div>
     @else
         @foreach($requests as $req)
             <div class="box">
-                <strong>Request #{{ $req->lab_request_id }}</strong> —
-                {{ $req->patient?->user?->fullName() }} —
-                <span class="tag">{{ $req->status }}</span>
-                <span class="muted">({{ $req->request_at?->format('M d, Y g:i A') }})</span>
-                <br>
-                @if($req->doctor)
-                    <span class="muted">Referred by Dr. {{ $req->doctor?->user?->fullName() }}</span>
-                @else
-                    <span class="muted">Patient self-requested (no doctor consultation)</span>
-                @endif
-                @if($req->labAppointment)
-                    &mdash; <span class="muted">Lab appointment: {{ $req->labAppointment->scheduled_at?->format('M d, Y g:i A') }}</span>
-                @endif
+                <p>
+                    <strong>Request #{{ $req->lab_request_id }}</strong> —
+                    {{ $req->patient?->user?->fullName() }} —
+                    <span class="tag">{{ $req->status }}</span>
+                    <span class="muted">({{ $req->request_at?->format('M d, Y g:i A') }})</span>
+                </p>
+                <p class="muted" style="margin-bottom:10px;">
+                    @if($req->doctor)
+                        Referred by Dr. {{ $req->doctor?->user?->fullName() }}
+                    @else
+                        Patient self-requested (no doctor consultation)
+                    @endif
+                    @if($req->labAppointment)
+                        &mdash; Lab appointment: {{ $req->labAppointment->scheduled_at?->format('M d, Y g:i A') }}
+                    @endif
+                </p>
                 <table>
                     <tr><th>Test</th><th>Status</th><th>Result</th><th></th></tr>
                     @foreach($req->items as $item)

@@ -5,11 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>PIMS - Register</title>
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 </head>
-<body>
+<body class="auth-page">
 <div class="auth-wrap">
     <h1>Register</h1>
-    <p class="page-subtitle" style="text-align:center;">Create a patient account</p>
+    <p class="page-subtitle">Create a patient account</p>
 
     @if($errors->any())
         <div class="alert alert-error">
@@ -55,7 +56,7 @@
             <label for="password_confirmation">Confirm Password</label>
             <input type="password" name="password_confirmation" id="password_confirmation" required>
         </div>
-        <button type="submit" class="btn" style="width:100%;">Register</button>
+        <button type="submit" class="btn btn-full">Register</button>
     </form>
 
     <div class="center-link">

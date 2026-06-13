@@ -4,7 +4,11 @@
     <h1>Add New User</h1>
     <p class="page-subtitle">Create a staff or admin account. Doctors require a license number.</p>
 
-    <a href="{{ route('admin.users.index') }}" class="btn btn-outline">Back</a>
+    <div class="btn-row">
+        <a href="{{ route('admin.users.index') }}" class="btn btn-outline">
+            <i class="bi bi-arrow-left"></i> Back
+        </a>
+    </div>
 
     <form action="{{ route('admin.users.store') }}" method="POST">
         @csrf
@@ -56,6 +60,6 @@
             <label for="password">Password</label>
             <input type="password" name="password" id="password" required>
         </div>
-        <button type="submit" class="btn">Create User</button>
+        <button type="submit" class="btn"><i class="bi bi-person-check"></i> Create User</button>
     </form>
 @endsection

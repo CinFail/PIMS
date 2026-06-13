@@ -6,17 +6,31 @@
 
     <div class="cards">
         <div class="card">
-            <div class="num">{{ $pendingRequests }}</div>
-            <div class="lbl">Pending Lab Tests</div>
+            <div class="card-inner">
+                <div>
+                    <div class="num">{{ $pendingRequests }}</div>
+                    <div class="lbl">Pending Lab Tests</div>
+                </div>
+                <div class="card-icon"><i class="bi bi-eyedropper-fill"></i></div>
+            </div>
         </div>
         <div class="card">
-            <div class="num">{{ $softCopyRequests }}</div>
-            <div class="lbl">Soft Copy Requests</div>
+            <div class="card-inner">
+                <div>
+                    <div class="num">{{ $softCopyRequests }}</div>
+                    <div class="lbl">Soft Copy Requests</div>
+                </div>
+                <div class="card-icon"><i class="bi bi-cloud-arrow-down-fill"></i></div>
+            </div>
         </div>
     </div>
 
-    <p>
-        <a href="{{ route('medtech.lab.index') }}" class="btn">Scheduled Lab Tests</a>
-        <a href="{{ route('medtech.softcopy.index') }}" class="btn btn-outline">Soft Copy Requests</a>
-    </p>
+    <div class="btn-row">
+        <a href="{{ route('medtech.lab.index') }}" class="btn">
+            <i class="bi bi-eyedropper"></i> Scheduled Lab Tests
+        </a>
+        <a href="{{ route('medtech.softcopy.index') }}" class="btn btn-outline">
+            <i class="bi bi-cloud-download"></i> Soft Copy Requests
+        </a>
+    </div>
 @endsection

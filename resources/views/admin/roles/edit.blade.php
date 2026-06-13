@@ -4,7 +4,11 @@
     <h1>Permissions: {{ $role->display_name }}</h1>
     <p class="page-subtitle">Tick the actions this role can perform, then save.</p>
 
-    <a href="{{ route('admin.roles.index') }}" class="btn btn-outline">Back</a>
+    <div class="btn-row">
+        <a href="{{ route('admin.roles.index') }}" class="btn btn-outline">
+            <i class="bi bi-arrow-left"></i> Back
+        </a>
+    </div>
 
     <form action="{{ route('admin.roles.update', $role->role_id) }}" method="POST">
         @csrf
@@ -22,6 +26,6 @@
             @endforelse
         </div>
 
-        <button type="submit" class="btn">Save Permissions</button>
+        <button type="submit" class="btn"><i class="bi bi-save"></i> Save Permissions</button>
     </form>
 @endsection

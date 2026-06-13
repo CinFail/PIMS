@@ -4,6 +4,12 @@
     <h1>Add New Patient</h1>
     <p class="page-subtitle">Register a walk-in patient. OTP is bypassed, but an email OR a mobile number is required.</p>
 
+    <div class="btn-row">
+        <a href="{{ route('receptionist.patients.index') }}" class="btn btn-outline">
+            <i class="bi bi-arrow-left"></i> Back
+        </a>
+    </div>
+
     <form action="{{ route('receptionist.patients.store') }}" method="POST">
         @csrf
         <div class="form-group">
@@ -73,6 +79,6 @@
             <p class="help">e.g. Heart disease, Cancer, Diabetes in immediate family.</p>
         </div>
 
-        <button type="submit" class="btn">Create Patient</button>
+        <button type="submit" class="btn"><i class="bi bi-person-check"></i> Create Patient</button>
     </form>
 @endsection

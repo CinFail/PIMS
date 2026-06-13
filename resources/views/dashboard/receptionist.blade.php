@@ -6,13 +6,31 @@
 
     <div class="cards">
         <div class="card">
-            <div class="num">{{ $patientCount }}</div>
-            <div class="lbl">Registered Patients</div>
+            <div class="card-inner">
+                <div>
+                    <div class="num">{{ $patientCount }}</div>
+                    <div class="lbl">Registered Patients</div>
+                </div>
+                <div class="card-icon"><i class="bi bi-people-fill"></i></div>
+            </div>
+        </div>
+        <div class="card quick-links-card">
+            <div class="quick-links-title">Quick Links</div>
+            <a href="{{ route('receptionist.patients.create') }}" class="quick-link">
+                <i class="bi bi-person-plus"></i> Add New Patient
+            </a>
+            <a href="{{ route('receptionist.patients.index') }}" class="quick-link">
+                <i class="bi bi-card-list"></i> View All Information
+            </a>
         </div>
     </div>
 
-    <p>
-        <a href="{{ route('receptionist.patients.create') }}" class="btn">Add New Patient</a>
-        <a href="{{ route('receptionist.patients.index') }}" class="btn btn-outline">Patient Information</a>
-    </p>
+    <div class="btn-row">
+        <a href="{{ route('receptionist.patients.create') }}" class="btn">
+            <i class="bi bi-person-plus"></i> Add New Patient
+        </a>
+        <a href="{{ route('receptionist.patients.index') }}" class="btn btn-outline">
+            <i class="bi bi-person-lines-fill"></i> Patient Information
+        </a>
+    </div>
 @endsection

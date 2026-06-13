@@ -11,24 +11,30 @@
         {{ $consultation->consultation_at?->format('M d, Y g:i A') }}
     </p>
 
-    <a href="{{ route('doctor.patients.show', $consultation->patient_id) }}" class="btn btn-outline">Back to Chart</a>
+    <div class="btn-row">
+        <a href="{{ route('doctor.patients.show', $consultation->patient_id) }}" class="btn btn-outline">
+            <i class="bi bi-arrow-left"></i> Back to Chart
+        </a>
+    </div>
 
-    {{-- ---------------- Diagnoses ---------------- --}}
+    {{-- ── Diagnoses ── --}}
     <h2>Diagnoses</h2>
     @if($consultation->diagnoses->where('is_voided', 0)->isEmpty())
         <p class="muted">No diagnoses for this consultation yet.</p>
     @else
-        <table>
-            <tr><th>Date</th><th>Description</th><th>Type</th><th>ICD</th></tr>
-            @foreach($consultation->diagnoses->where('is_voided', 0) as $d)
-                <tr>
-                    <td>{{ $d->diagnosed_at?->format('M d, Y') }}</td>
-                    <td>{{ $d->description }}</td>
-                    <td>{{ $d->diagnosis_type }}</td>
-                    <td>{{ $d->icd_code ?? '—' }}</td>
-                </tr>
-            @endforeach
-        </table>
+        <div class="table-card">
+            <table>
+                <tr><th>Date</th><th>Description</th><th>Type</th><th>ICD</th></tr>
+                @foreach($consultation->diagnoses->where('is_voided', 0) as $d)
+                    <tr>
+                        <td>{{ $d->diagnosed_at?->format('M d, Y') }}</td>
+                        <td>{{ $d->description }}</td>
+                        <td>{{ $d->diagnosis_type }}</td>
+                        <td>{{ $d->icd_code ?? '—' }}</td>
+                    </tr>
+                @endforeach
+            </table>
+        </div>
     @endif
 
     <h3>Add Diagnosis</h3>
@@ -53,7 +59,7 @@
         <button type="submit" class="btn">Save Diagnosis</button>
     </form>
 
-    {{-- ---------------- Prescription ---------------- --}}
+    {{-- ── Prescription ── --}}
     <h2>Prescription</h2>
     <p class="help">
         Prescribing doctor: Dr. {{ $doctor?->user?->fullName() }} &mdash;
@@ -61,19 +67,21 @@
     </p>
 
     @if($consultation->prescription && $consultation->prescription->items->count())
-        <table>
-            <tr><th>Medicine</th><th>Dosage</th><th>Form</th><th>Frequency</th><th>Duration</th><th>Qty</th></tr>
-            @foreach($consultation->prescription->items as $item)
-                <tr>
-                    <td>{{ $item->medicine_name }}</td>
-                    <td>{{ $item->dosage ?? '—' }}</td>
-                    <td>{{ $item->form ?? '—' }}</td>
-                    <td>{{ $item->frequency ?? '—' }}</td>
-                    <td>{{ $item->duration ?? '—' }}</td>
-                    <td>{{ $item->quantity ?? '—' }}</td>
-                </tr>
-            @endforeach
-        </table>
+        <div class="table-card">
+            <table>
+                <tr><th>Medicine</th><th>Dosage</th><th>Form</th><th>Frequency</th><th>Duration</th><th>Qty</th></tr>
+                @foreach($consultation->prescription->items as $item)
+                    <tr>
+                        <td>{{ $item->medicine_name }}</td>
+                        <td>{{ $item->dosage ?? '—' }}</td>
+                        <td>{{ $item->form ?? '—' }}</td>
+                        <td>{{ $item->frequency ?? '—' }}</td>
+                        <td>{{ $item->duration ?? '—' }}</td>
+                        <td>{{ $item->quantity ?? '—' }}</td>
+                    </tr>
+                @endforeach
+            </table>
+        </div>
     @else
         <p class="muted">No medicines prescribed yet.</p>
     @endif
@@ -112,7 +120,7 @@
         <button type="submit" class="btn">Add Medicine</button>
     </form>
 
-    {{-- ---------------- Previous prescriptions ---------------- --}}
+    {{-- ── Previous prescriptions ── --}}
     <h2>Previous Prescriptions (Medication History)</h2>
     @if($previousPrescriptions->isEmpty())
         <p class="muted">No previous prescriptions.</p>
@@ -122,7 +130,7 @@
                 <strong>{{ $presc->prescribed_at?->format('M d, Y') }}</strong> —
                 Dr. {{ $presc->doctor?->user?->fullName() }}
                 (License: {{ $presc->doctor?->license_number ?? 'N/A' }})
-                <table>
+                <table style="margin-top:10px;">
                     <tr><th>Medicine</th><th>Dosage</th><th>Frequency</th></tr>
                     @foreach($presc->items as $item)
                         <tr>

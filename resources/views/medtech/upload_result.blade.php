@@ -7,7 +7,11 @@
         Patient: {{ $item->request?->patient?->user?->fullName() }}
     </p>
 
-    <a href="{{ route('medtech.lab.index') }}" class="btn btn-outline">Back</a>
+    <div class="btn-row">
+        <a href="{{ route('medtech.lab.index') }}" class="btn btn-outline">
+            <i class="bi bi-arrow-left"></i> Back
+        </a>
+    </div>
 
     <form action="{{ route('medtech.lab.result.store', $item->request_item_id) }}" method="POST" enctype="multipart/form-data">
         @csrf
@@ -39,9 +43,9 @@
             <label for="result_file">Upload Soft Copy (PDF or image, optional)</label>
             <input type="file" name="result_file" id="result_file" accept=".pdf,.jpg,.jpeg,.png">
             @if($item->result?->result_file_path)
-                <div class="help">Current file: <a href="{{ asset('storage/'.$item->result->result_file_path) }}" target="_blank">view</a></div>
+                <p class="help">Current file: <a href="{{ asset('storage/'.$item->result->result_file_path) }}" target="_blank">view</a></p>
             @endif
         </div>
-        <button type="submit" class="btn">Save Result</button>
+        <button type="submit" class="btn"><i class="bi bi-save"></i> Save Result</button>
     </form>
 @endsection

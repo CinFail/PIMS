@@ -5,7 +5,10 @@
     <p class="page-subtitle">Choose an available doctor schedule. Once taken, a slot cannot be booked again.</p>
 
     @if($sessions->isEmpty())
-        <p class="muted">There are no open schedules right now. Please check back later.</p>
+        <div class="empty-state">
+            <i class="bi bi-calendar2-x"></i>
+            <p>There are no open schedules right now. Please check back later.</p>
+        </div>
     @else
     <form action="{{ route('patient.appointments.store') }}" method="POST">
         @csrf
@@ -47,7 +50,7 @@
             @endforelse
         </div>
 
-        <button type="submit" class="btn">Confirm Booking</button>
+        <button type="submit" class="btn"><i class="bi bi-calendar-check"></i> Confirm Booking</button>
     </form>
     @endif
 @endsection
