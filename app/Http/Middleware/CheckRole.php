@@ -21,6 +21,10 @@ class CheckRole
             return redirect()->route('login');
         }
 
+        if ($user->hasRole('super_admin')) {
+            return $next($request);
+        }
+
         foreach ($roles as $role) {
             if ($user->hasRole($role)) {
                 return $next($request);
