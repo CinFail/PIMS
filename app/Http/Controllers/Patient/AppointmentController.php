@@ -18,10 +18,7 @@ use Illuminate\Support\Facades\DB;
 
 class AppointmentController extends Controller
 {
-    /**
-     * List the patient's own appointments. A single page, split into
-     * Doctor Appointments and Laboratory Appointments.
-     */
+    /** List the patient's own appointments. */
     public function index()
     {
         $patient = $this->patient();
@@ -41,10 +38,9 @@ class AppointmentController extends Controller
         return view('patient.appointments', compact('appointments', 'labAppointments'));
     }
 
-    /** Show the booking form: active doctors, open slots, and lab tests. */
+    /** Show the booking form: open slots and lab tests. */
     public function create()
     {
-        // Open duty slots: not voided, in the future, and not already taken.
         $sessions = DoctorDutySession::with('doctor.user')
             ->where('is_voided', 0)
             ->where('status', 'Scheduled')
@@ -57,26 +53,48 @@ class AppointmentController extends Controller
         $labTests = LabTest::with('category')->where('is_active', 1)
             ->orderBy('test_name')->get();
 
-        return view('patient.book', compact('sessions', 'labTests'));
+        // Non-patient roles (e.g. receptionist) need a patient selector.
+        /** @var \App\Models\User $actor */
+        $actor = Auth::user();
+        $patients = collect();
+        if (! $actor->hasRole('patient')) {
+            $patients = PatientProfile::with('user')
+                ->whereHas('user', fn ($q) => $q->where('account_status', 'Active'))
+                ->orderBy('patient_id')
+                ->get();
+        }
+
+        return view('patient.book', compact('sessions', 'labTests', 'patients'));
     }
 
-    /** Book the chosen slot. The slot is locked so no one else can take it. */
+    /** Book the chosen slot. */
     public function store(Request $request)
     {
-        $data = $request->validate([
+        /** @var \App\Models\User $actor */
+        $actor = Auth::user();
+        $isPatient = $actor->hasRole('patient');
+
+        $rules = [
             'duty_session_id'  => ['required', 'integer', 'exists:doctor_duty_sessions,duty_session_id'],
             'preferred_time'   => ['nullable', 'regex:/^([01]\d|2[0-3]):[0-5]\d$/'],
             'reason_for_visit' => ['nullable', 'string'],
             'lab_tests'        => ['nullable', 'array'],
             'lab_tests.*'      => ['integer', 'exists:lab_tests,lab_test_id'],
-        ]);
+        ];
 
-        $patient = $this->patient();
+        if (! $isPatient) {
+            $rules['patient_id'] = ['required', 'integer', 'exists:patient_profiles,patient_id'];
+        }
+
+        $data = $request->validate($rules);
+
+        $patient = $isPatient
+            ? $this->patient()
+            : PatientProfile::with('user')->findOrFail($data['patient_id']);
+
         $scheduledStatus = AppointmentStatus::where('status_name', 'Scheduled')->first();
 
         $appointment = DB::transaction(function () use ($data, $patient, $scheduledStatus) {
-            // Lock the session row so concurrent requests queue up here instead of
-            // both passing the isTaken() check and creating duplicate appointments.
             $session = DoctorDutySession::with('doctor')
                 ->lockForUpdate()
                 ->findOrFail($data['duty_session_id']);
@@ -109,7 +127,6 @@ class AppointmentController extends Controller
                 'status_id'        => $scheduledStatus->appointment_status_id,
             ]);
 
-            // If the patient selected lab tests, create a lab request for them.
             if (! empty($data['lab_tests'])) {
                 $labRequest = LabRequest::create([
                     'patient_id' => $patient->patient_id,
@@ -130,13 +147,17 @@ class AppointmentController extends Controller
             return $appointment;
         });
 
-        AuditLogger::log(
-            'CREATE', 'Appointments', 'appointments', $appointment->appointment_id,
-            'Patient booked an appointment'
-        );
+        $msg = $isPatient
+            ? $actor->fullName().' booked an appointment'
+            : $actor->fullName().' booked appointment for '.$patient->user->fullName();
 
-        return redirect()->route('patient.appointments.index')
-            ->with('status', 'Your appointment has been booked.');
+        AuditLogger::log('CREATE', 'Appointments', 'appointments', $appointment->appointment_id, $msg);
+
+        $redirect = $isPatient
+            ? redirect()->route('patient.appointments.index')
+            : redirect()->route('receptionist.patients.index');
+
+        return $redirect->with('status', 'Appointment has been booked successfully.');
     }
 
     private function patient(): PatientProfile

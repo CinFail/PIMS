@@ -13,6 +13,25 @@
     <form action="{{ route('patient.appointments.store') }}" method="POST">
         @csrf
 
+        @if(!auth()->user()->hasRole('patient'))
+        <div class="form-card">
+            <div class="form-section-title">Patient</div>
+            <div class="form-group">
+                <label for="patient_id">Book For <span class="req">*</span></label>
+                <select name="patient_id" id="patient_id"
+                        class="{{ $errors->has('patient_id') ? 'is-error' : '' }}" required>
+                    <option value="">— Select Patient —</option>
+                    @foreach($patients as $p)
+                        <option value="{{ $p->patient_id }}" @selected(old('patient_id') == $p->patient_id)>
+                            {{ $p->user->fullName() }}
+                        </option>
+                    @endforeach
+                </select>
+                @error('patient_id') <span class="field-error">{{ $message }}</span> @enderror
+            </div>
+        </div>
+        @endif
+
         <h2>Available Schedules <span class="req">*</span></h2>
         <div class="form-group" style="max-width:none;">
             @foreach($sessions as $s)

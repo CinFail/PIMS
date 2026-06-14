@@ -175,16 +175,18 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    /* 3 — Admin create-user: show doctor/medtech fields only when relevant role is chosen */
-    var roleSelect = document.getElementById('role');
-    var doctorFields = document.getElementById('doctor-fields');
-    if (roleSelect && doctorFields) {
-        function syncDoctorFields() {
+    /* 3 — Admin create-user: show role-specific fields based on selected role */
+    var roleSelect    = document.getElementById('role');
+    var doctorFields  = document.getElementById('doctor-fields');
+    var patientFields = document.getElementById('patient-fields');
+    if (roleSelect && (doctorFields || patientFields)) {
+        function syncRoleFields() {
             var v = roleSelect.value;
-            doctorFields.style.display = (v === 'doctor' || v === 'med_tech') ? '' : 'none';
+            if (doctorFields)  doctorFields.style.display  = (v === 'doctor' || v === 'med_tech') ? '' : 'none';
+            if (patientFields) patientFields.style.display = (v === 'patient') ? '' : 'none';
         }
-        roleSelect.addEventListener('change', syncDoctorFields);
-        syncDoctorFields();
+        roleSelect.addEventListener('change', syncRoleFields);
+        syncRoleFields();
     }
 
 });

@@ -10,7 +10,7 @@ class AuditLog extends Model
     protected $table = 'audit_logs';
     protected $primaryKey = 'log_id';
 
-    // This table only ever has logged_at; it is append-only (no updated_at).
+    // This table only ever has logged_at, it is append-only (no updated_at).
     public $timestamps = false;
 
     protected $fillable = [

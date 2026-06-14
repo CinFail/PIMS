@@ -54,14 +54,12 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    // Patient
+    // Patient-only routes
     Route::middleware('role:patient')->prefix('patient')->name('patient.')->group(function () {
         Route::get('profile', [PatientProfileController::class, 'edit'])->name('profile.edit');
         Route::put('profile', [PatientProfileController::class, 'update'])->name('profile.update');
 
         Route::get('appointments', [PatientAppointmentController::class, 'index'])->name('appointments.index');
-        Route::get('appointments/book', [PatientAppointmentController::class, 'create'])->name('appointments.create');
-        Route::post('appointments', [PatientAppointmentController::class, 'store'])->name('appointments.store');
 
         // Laboratory results & soft-copy requests
         Route::get('lab-results', [PatientLabRequestController::class, 'index'])->name('lab.index');
@@ -70,6 +68,12 @@ Route::middleware('auth')->group(function () {
         // Request a lab test (no doctor consultation) + book a lab appointment
         Route::get('lab-tests/request', [PatientLabTestController::class, 'create'])->name('lab.request.create');
         Route::post('lab-tests/request', [PatientLabTestController::class, 'store'])->name('lab.request.store');
+    });
+
+    // Appointment booking — any authenticated role with the book-appointment permission
+    Route::middleware('permission:book-appointment')->prefix('patient')->name('patient.')->group(function () {
+        Route::get('appointments/book', [PatientAppointmentController::class, 'create'])->name('appointments.create');
+        Route::post('appointments', [PatientAppointmentController::class, 'store'])->name('appointments.store');
     });
 
     // Doctor

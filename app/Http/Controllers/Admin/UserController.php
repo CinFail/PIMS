@@ -49,16 +49,27 @@ class UserController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'first_name'     => ['required', 'string', 'max:50'],
-            'last_name'      => ['required', 'string', 'max:50'],
-            'email'          => ['required', 'email', 'max:254', 'unique:users,email'],
-            'mobile_number'  => ['nullable', new MobileNumber],
-            'date_of_birth'  => ['required', 'date'],
-            'role'           => ['required', 'in:super_admin,doctor,receptionist,med_tech,patient'],
-            'license_number' => ['nullable', 'string', 'max:50'],
-            'specialization' => ['nullable', 'string', 'max:100'],
-            'short_bio'      => ['nullable', 'string', 'max:500'],
-            'password'       => ['required', 'string', 'min:6'],
+            'first_name'               => ['required', 'string', 'max:50'],
+            'middle_name'              => ['nullable', 'string', 'max:50'],
+            'last_name'                => ['required', 'string', 'max:50'],
+            'email'                    => ['required', 'email', 'max:254', 'unique:users,email'],
+            'mobile_number'            => ['nullable', new MobileNumber],
+            'date_of_birth'            => ['required', 'date', 'before_or_equal:today'],
+            'role'                     => ['required', 'in:super_admin,doctor,receptionist,med_tech,patient'],
+            'license_number'           => ['nullable', 'string', 'max:50'],
+            'specialization'           => ['nullable', 'string', 'max:100'],
+            'short_bio'                => ['nullable', 'string', 'max:500'],
+            'password'                 => ['required', 'string', 'min:6'],
+            'sex'                      => ['nullable', 'in:Male,Female'],
+            'blood_type'               => ['nullable', 'string', 'max:5'],
+            'address'                  => ['nullable', 'string'],
+            'emergency_contact_name'   => ['nullable', 'string', 'max:100'],
+            'emergency_contact_number' => ['nullable', new MobileNumber],
+            'allergies'                => ['nullable', 'string'],
+            'chronic_conditions'       => ['nullable', 'string'],
+            'past_surgeries'           => ['nullable', 'string'],
+            'current_medications'      => ['nullable', 'string'],
+            'family_history'           => ['nullable', 'string'],
         ]);
 
         // Doctors must have a license number (prescriptions need it).
@@ -71,6 +82,7 @@ class UserController extends Controller
         $user = DB::transaction(function () use ($data) {
             $user = User::create([
                 'first_name'                  => $data['first_name'],
+                'middle_name'                 => $data['middle_name'] ?? null,
                 'last_name'                   => $data['last_name'],
                 'email'                       => $data['email'],
                 'mobile_number'               => $data['mobile_number'] ?? null,
@@ -112,7 +124,22 @@ class UserController extends Controller
                     AdminProfile::create(['user_id' => $user->user_id]);
                     break;
                 case 'patient':
-                    PatientProfile::create(['user_id' => $user->user_id]);
+                    $profile = PatientProfile::create([
+                        'user_id'                  => $user->user_id,
+                        'sex'                      => $data['sex'] ?? null,
+                        'blood_type'               => $data['blood_type'] ?? null,
+                        'address'                  => $data['address'] ?? null,
+                        'emergency_contact_name'   => $data['emergency_contact_name'] ?? null,
+                        'emergency_contact_number' => $data['emergency_contact_number'] ?? null,
+                    ]);
+                    \App\Models\PatientMedicalHistory::create([
+                        'patient_id'          => $profile->patient_id,
+                        'allergies'           => $data['allergies'] ?? null,
+                        'chronic_conditions'  => $data['chronic_conditions'] ?? null,
+                        'past_surgeries'      => $data['past_surgeries'] ?? null,
+                        'current_medications' => $data['current_medications'] ?? null,
+                        'family_history'      => $data['family_history'] ?? null,
+                    ]);
                     break;
             }
 

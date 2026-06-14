@@ -30,6 +30,13 @@
                            class="{{ $errors->has('last_name') ? 'is-error' : '' }}" required>
                     @error('last_name') <span class="field-error">{{ $message }}</span> @enderror
                 </div>
+                <div class="form-group span-2">
+                    <label for="middle_name">Middle Name</label>
+                    <input type="text" name="middle_name" id="middle_name"
+                           value="{{ old('middle_name') }}"
+                           class="{{ $errors->has('middle_name') ? 'is-error' : '' }}">
+                    @error('middle_name') <span class="field-error">{{ $message }}</span> @enderror
+                </div>
                 <div class="form-group">
                     <label for="email">Email</label>
                     <input type="email" name="email" id="email"
@@ -49,6 +56,7 @@
                     <label for="date_of_birth">Date of Birth <span class="req">*</span></label>
                     <input type="date" name="date_of_birth" id="date_of_birth"
                            value="{{ old('date_of_birth') }}"
+                           max="{{ date('Y-m-d') }}"
                            class="{{ $errors->has('date_of_birth') ? 'is-error' : '' }}" required>
                     @error('date_of_birth') <span class="field-error">{{ $message }}</span> @enderror
                 </div>

@@ -32,6 +32,7 @@ class ProfileController extends Controller
 
         $data = $request->validate([
             'first_name'               => ['required', 'string', 'max:50'],
+            'middle_name'              => ['nullable', 'string', 'max:50'],
             'last_name'                => ['required', 'string', 'max:50'],
             'mobile_number'            => ['nullable', new MobileNumber],
             'sex'                      => ['nullable', 'in:Male,Female'],
@@ -53,6 +54,7 @@ class ProfileController extends Controller
 
         $user->update([
             'first_name'    => $data['first_name'],
+            'middle_name'   => $data['middle_name'] ?? null,
             'last_name'     => $data['last_name'],
             'mobile_number' => $data['mobile_number'] ?? null,
         ]);

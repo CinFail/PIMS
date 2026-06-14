@@ -26,10 +26,11 @@ class RegisterController extends Controller
     {
         $data = $request->validate([
             'first_name'    => ['required', 'string', 'max:50'],
+            'middle_name'   => ['nullable', 'string', 'max:50'],
             'last_name'     => ['required', 'string', 'max:50'],
             'email'         => ['required', 'email', 'max:254', 'unique:users,email'],
             'mobile_number' => ['nullable', new MobileNumber],
-            'date_of_birth' => ['required', 'date'],
+            'date_of_birth' => ['required', 'date', 'before_or_equal:today'],
             'password'      => ['required', 'string', 'min:6', 'confirmed'],
         ]);
 
@@ -37,6 +38,7 @@ class RegisterController extends Controller
         $user = DB::transaction(function () use ($data) {
             $user = User::create([
                 'first_name'                  => $data['first_name'],
+                'middle_name'                 => $data['middle_name'] ?? null,
                 'last_name'                   => $data['last_name'],
                 'email'                       => $data['email'],
                 'mobile_number'               => $data['mobile_number'] ?? null,

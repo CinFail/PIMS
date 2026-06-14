@@ -99,7 +99,8 @@ class User extends Authenticatable
     /** Full name helper used across the views. */
     public function fullName(): string
     {
-        return trim($this->first_name.' '.$this->last_name);
+        $mi = $this->middle_name ? ' '.strtoupper(substr($this->middle_name, 0, 1)).'.' : '';
+        return trim($this->first_name.$mi.' '.$this->last_name);
     }
 
     /**

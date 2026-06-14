@@ -25,6 +25,13 @@
                     @error('last_name') <span class="field-error">{{ $message }}</span> @enderror
                 </div>
                 <div class="form-group">
+                    <label for="middle_name">Middle Name</label>
+                    <input type="text" name="middle_name" id="middle_name"
+                           value="{{ old('middle_name', $user->middle_name) }}"
+                           class="{{ $errors->has('middle_name') ? 'is-error' : '' }}">
+                    @error('middle_name') <span class="field-error">{{ $message }}</span> @enderror
+                </div>
+                <div class="form-group">
                     <label for="mobile_number">Mobile Number</label>
                     <input type="text" name="mobile_number" id="mobile_number"
                            value="{{ old('mobile_number', $user->mobile_number) }}"
