@@ -8,19 +8,29 @@ use Illuminate\Support\Facades\Auth;
 
 class AppointmentController extends Controller
 {
-    /** Scheduled check-ups: the queue of this doctor's appointments. */
+    /** Scheduled check-ups: own queue for doctors, all appointments for admin. */
     public function index()
     {
         $doctor = Auth::user()->doctorProfile;
 
-        $appointments = $doctor
-            ? Appointment::with(['patient.user', 'status'])
+        if ($doctor) {
+            $appointments = Appointment::with(['patient.user', 'status'])
                 ->where('doctor_id', $doctor->doctor_id)
                 ->where('is_voided', 0)
-                ->orderByDesc('appointment_at')
+                ->where('appointment_at', '>=', now())
+                ->orderBy('appointment_at')
+                ->get();
+            $byDoctor = null;
+        } else {
+            $appointments = collect();
+            $byDoctor = Appointment::with(['patient.user', 'doctor.user', 'status'])
+                ->where('is_voided', 0)
+                ->whereDate('appointment_at', today())
+                ->orderBy('appointment_at')
                 ->get()
-            : collect();
+                ->groupBy('doctor_id');
+        }
 
-        return view('doctor.appointments', compact('appointments'));
+        return view('doctor.appointments', compact('appointments', 'doctor', 'byDoctor'));
     }
 }

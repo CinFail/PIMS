@@ -112,26 +112,28 @@ class DoctorScheduleController extends Controller
             ->with('status', 'Duty session updated successfully.');
     }
 
-    /** Delete a duty session that has no active appointments. */
+    /** Delete a duty session, voiding any active appointments linked to it. */
     public function destroy(int $id)
     {
         $session = DoctorDutySession::where('is_voided', 0)->findOrFail($id);
 
-        if ($session->appointments()->where('is_voided', 0)->exists()) {
-            return back()->withErrors([
-                'delete' => 'Cannot delete: this session has one or more active appointments.',
-            ]);
-        }
+        $voided = $session->appointments()->where('is_voided', 0)->update([
+            'is_voided'   => 1,
+            'void_at'     => now(),
+            'void_reason' => 'Doctor duty session deleted by admin',
+        ]);
 
         $session->delete();
 
         AuditLogger::log(
             'DELETE', 'Doctor', 'doctor_duty_sessions', $id,
             "Admin deleted duty session (doctor_id {$session->doctor_id}, date {$session->duty_date})"
+            .($voided ? "; {$voided} linked appointment(s) voided" : '')
         );
 
         return redirect()->route('admin.doctor-schedules.index')
-            ->with('status', 'Duty session deleted.');
+            ->with('status', 'Duty session deleted.'
+                .($voided ? " {$voided} linked appointment(s) were also cancelled." : ''));
     }
 
     /** Active doctors ordered by last name, used in create/edit forms. */
