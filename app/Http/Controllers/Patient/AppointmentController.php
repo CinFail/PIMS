@@ -34,7 +34,53 @@ class AppointmentController extends Controller
             ->orderByDesc('scheduled_at')
             ->get();
 
-        return view('patient.appointments', compact('appointments', 'labAppointments'));
+        $availableSessions = DoctorDutySession::with('doctor.user')
+            ->where('is_voided', 0)
+            ->where('status', 'Scheduled')
+            ->whereDate('duty_date', '>=', now()->toDateString())
+            ->whereHas('doctor', fn ($q) => $q->where('is_active', 1))
+            ->whereDoesntHave('appointments', fn ($q) => $q->where('is_voided', 0)->whereNotIn('status_id', [4, 5, 6, 7]))
+            ->orderBy('duty_date')->orderBy('start_time')
+            ->get();
+
+        return view('patient.appointments', compact('appointments', 'labAppointments', 'availableSessions'));
+    }
+
+    /** Patient reschedules their own appointment to a different duty session. */
+    public function reschedule(Request $request, int $id)
+    {
+        $data = $request->validate([
+            'duty_session_id' => ['required', 'integer', 'exists:doctor_duty_sessions,duty_session_id'],
+        ]);
+
+        $patient     = $this->patient();
+        $appointment = Appointment::where('patient_id', $patient->patient_id)
+            ->where('is_voided', 0)
+            ->findOrFail($id);
+
+        DB::transaction(function () use ($data, $appointment) {
+            $session = DoctorDutySession::with('doctor')
+                ->lockForUpdate()
+                ->findOrFail($data['duty_session_id']);
+
+            if ($session->isTaken()) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'duty_session_id' => 'That duty session was just taken. Please select another.',
+                ]);
+            }
+
+            $appointment->update([
+                'duty_session_id' => $session->duty_session_id,
+                'doctor_id'       => $session->doctor_id,
+                'appointment_at'  => $session->duty_date->toDateString().' '.$session->start_time,
+                'status_id'       => 7,
+            ]);
+        });
+
+        AuditLogger::log('UPDATE', 'Appointments', 'appointments', $appointment->appointment_id,
+            'Patient rescheduled appointment to duty session #'.$data['duty_session_id']);
+
+        return back()->with('status', 'Appointment rescheduled successfully.');
     }
 
     /** Show the booking form: open slots and lab tests. */

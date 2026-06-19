@@ -84,6 +84,7 @@ Route::middleware('auth')->group(function () {
     Route::middleware('permission:book-appointment')->prefix('patient')->name('patient.')->group(function () {
         Route::get('appointments/book', [PatientAppointmentController::class, 'create'])->name('appointments.create');
         Route::post('appointments', [PatientAppointmentController::class, 'store'])->name('appointments.store');
+        Route::post('appointments/{id}/reschedule', [PatientAppointmentController::class, 'reschedule'])->name('appointments.reschedule');
     });
 
     // Doctor — consultation management (doctor role + permission)

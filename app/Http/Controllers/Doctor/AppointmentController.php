@@ -6,60 +6,119 @@ use App\Helpers\AuditLogger;
 use App\Http\Controllers\Controller;
 use App\Models\Appointment;
 use App\Models\AppointmentStatus;
+use App\Models\DoctorDutySession;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class AppointmentController extends Controller
 {
-    /** Scheduled check-ups: own queue for doctors, all appointments for admin. */
+    /**
+     * Scheduled check-ups index.
+     *  - Doctor: own upcoming appointments (future only, not voided).
+     *  - Admin:  ALL appointments across the system, paginated, not voided.
+     */
     public function index()
     {
-        $doctor = Auth::user()->doctorProfile;
+        $user   = Auth::user();
+        $doctor = $user->doctorProfile;
 
         if ($doctor) {
             $appointments = Appointment::with(['patient.user', 'status'])
                 ->where('doctor_id', $doctor->doctor_id)
                 ->where('is_voided', 0)
                 ->where('appointment_at', '>=', now())
+                ->orderByRaw('CASE WHEN status_id IN (1, 7) THEN 0 ELSE 1 END')
                 ->orderBy('appointment_at')
                 ->get();
-            $byDoctor = null;
         } else {
-            $appointments = collect();
-            $byDoctor = Appointment::with(['patient.user', 'doctor.user', 'status'])
+            $appointments = Appointment::with(['patient.user', 'doctor.user', 'status'])
                 ->where('is_voided', 0)
-                ->whereDate('appointment_at', today())
+                ->orderByRaw('CASE WHEN status_id IN (1, 7) THEN 0 ELSE 1 END')
                 ->orderBy('appointment_at')
-                ->get()
-                ->groupBy('doctor_id');
+                ->paginate(25);
         }
 
-        $statuses = AppointmentStatus::orderBy('appointment_status_id')->get();
+        $availableSessions = DoctorDutySession::with('doctor.user')
+            ->where('is_voided', 0)
+            ->where('status', 'Scheduled')
+            ->whereDate('duty_date', '>=', now()->toDateString())
+            ->whereHas('doctor', fn ($q) => $q->where('is_active', 1))
+            ->whereDoesntHave('appointments', fn ($q) => $q->where('is_voided', 0)->whereNotIn('status_id', [4, 5, 6, 7]))
+            ->orderBy('duty_date')->orderBy('start_time')
+            ->get();
 
-        return view('doctor.appointments', compact('appointments', 'doctor', 'byDoctor', 'statuses'));
+        return view('doctor.appointments', compact('appointments', 'doctor', 'availableSessions'));
     }
 
-    /** Update the status of one appointment (doctor's own appointments only). */
+    /**
+     * Update appointment status from the dropdown.
+     * Accepted status IDs (per appointment_statuses table):
+     *   4 = Completed, 5 = Cancelled, 6 = No Show, 7 = Rescheduled
+     *
+     * When status 7 (Rescheduled) is chosen, the existing record's appointment_at
+     * is updated with the supplied date+time — no new row is created.
+     *
+     * Transitioning to any terminal status (4-7) automatically frees the linked
+     * duty session via DoctorDutySession::isTaken() (which excludes those IDs).
+     *
+     * Both the owning doctor and a super_admin may call this endpoint.
+     */
     public function updateStatus(Request $request, int $appointmentId)
     {
-        $data = $request->validate([
-            'status_name' => ['required', 'string', 'in:Scheduled,Confirmed,In Progress,Completed,Cancelled,No Show'],
-        ]);
+        $rules = [
+            'status_id' => ['required', 'integer', 'in:4,5,6,7'],
+        ];
+
+        if ($request->input('status_id') == 7) {
+            $rules['duty_session_id'] = ['required', 'integer', 'exists:doctor_duty_sessions,duty_session_id'];
+        }
+
+        $data = $request->validate($rules);
 
         $appointment = Appointment::with('status')->findOrFail($appointmentId);
-        $doctor      = Auth::user()->doctorProfile;
+        $user        = Auth::user();
+        $doctor      = $user->doctorProfile;
+        $isAdmin     = $user->hasRole('super_admin');
 
-        abort_unless($doctor, 403, 'Your doctor profile is missing.');
-        abort_unless($appointment->doctor_id === $doctor->doctor_id, 403, 'This is not your appointment.');
+        abort_unless(
+            $isAdmin || ($doctor && $appointment->doctor_id === $doctor->doctor_id),
+            403, 'This is not your appointment.'
+        );
 
-        $status = AppointmentStatus::where('status_name', $data['status_name'])->firstOrFail();
-        $old    = $appointment->status?->status_name;
+        if ((int) $data['status_id'] === 7) {
+            DB::transaction(function () use ($data, $appointment) {
+                $session = DoctorDutySession::with('doctor')
+                    ->lockForUpdate()
+                    ->findOrFail($data['duty_session_id']);
 
-        $appointment->update(['status_id' => $status->appointment_status_id]);
+                if ($session->isTaken()) {
+                    throw \Illuminate\Validation\ValidationException::withMessages([
+                        'duty_session_id' => 'That duty session was just taken. Please select another.',
+                    ]);
+                }
+
+                $appointment->update([
+                    'duty_session_id' => $session->duty_session_id,
+                    'doctor_id'       => $session->doctor_id,
+                    'appointment_at'  => $session->duty_date->toDateString().' '.$session->start_time,
+                    'status_id'       => 7,
+                ]);
+            });
+
+            AuditLogger::log('UPDATE', 'Appointments', 'appointments', $appointment->appointment_id,
+                "Appointment rescheduled to duty session #{$data['duty_session_id']}");
+
+            return back()->with('status', 'Appointment rescheduled successfully.');
+        }
+
+        $status    = AppointmentStatus::findOrFail($data['status_id']);
+        $oldStatus = $appointment->status?->status_name;
+        $appointment->update(['status_id' => $data['status_id']]);
 
         AuditLogger::log('UPDATE', 'Appointments', 'appointments', $appointment->appointment_id,
-            "Doctor changed appointment status from {$old} to {$data['status_name']}");
+            "Changed appointment status from {$oldStatus} to {$status->status_name}");
 
-        return back()->with('status', "Appointment marked as {$data['status_name']}.");
+        return back()->with('status', "Appointment marked as {$status->status_name}.");
     }
 }

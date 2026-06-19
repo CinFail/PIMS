@@ -260,12 +260,19 @@ class VoidRequestController extends Controller
         if ($vr->table_name === 'lab_appointments') {
             DB::table('lab_appointments')->where($pk, $vr->record_id)->update(['status' => 'Scheduled']);
         } else {
-            DB::table($vr->table_name)->where($pk, $vr->record_id)->update([
+            $restoreData = [
                 'is_voided'        => 0,
                 'void_at'          => null,
                 'void_reason'      => null,
                 'void_approved_by' => null,
-            ]);
+            ];
+
+            // Reset to Scheduled so the duty session reads as taken again.
+            if ($vr->table_name === 'appointments') {
+                $restoreData['status_id'] = 1;
+            }
+
+            DB::table($vr->table_name)->where($pk, $vr->record_id)->update($restoreData);
         }
 
         AuditLogger::log('RESTORE', 'Clinical', $vr->table_name, $vr->record_id,

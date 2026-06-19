@@ -23,7 +23,7 @@
     @else
         <div class="table-card">
             <table>
-                <tr><th>Date &amp; Time</th><th>Doctor</th><th>Type</th><th>Status</th><th></th></tr>
+                <tr><th>Date &amp; Time</th><th>Doctor</th><th>Type</th><th>Status</th><th style="width:1%;white-space:nowrap;"></th></tr>
                 @foreach($appointments as $a)
                     <tr>
                         <td>{{ $a->appointment_at?->format('M d, Y g:i A') }}</td>
@@ -32,6 +32,11 @@
                         <td>{{ $a->status?->status_name }}</td>
                         <td class="row-actions">
                             @if(!in_array($a->status?->status_name, ['Completed','Cancelled','No Show']))
+                                <button type="button" class="btn btn-small btn-outline"
+                                        style="margin-right:16px;"
+                                        onclick="toggleRescheduleForm('resched-appt-{{ $a->appointment_id }}')">
+                                    Reschedule
+                                </button>
                                 <button type="button" class="btn btn-small btn-outline"
                                         onclick="toggleVoidForm('void-appt-{{ $a->appointment_id }}')">
                                     Cancel Request
@@ -56,6 +61,31 @@
                             </form>
                         </td>
                     </tr>
+                    <tr id="resched-appt-{{ $a->appointment_id }}" style="display:none;">
+                        <td colspan="5" style="padding:10px 12px;background:#fafafa;">
+                            <form action="{{ route('patient.appointments.reschedule', $a->appointment_id) }}" method="POST">
+                                @csrf
+                                <div class="form-group" style="margin-bottom:6px;">
+                                    <label style="font-size:0.88em;font-weight:600;">Select new duty session</label>
+                                    <select name="duty_session_id" required style="width:100%;margin-top:4px;">
+                                        <option value="" disabled selected>— Choose a schedule —</option>
+                                        @foreach($availableSessions as $s)
+                                            @if($s->duty_session_id !== $a->duty_session_id)
+                                                <option value="{{ $s->duty_session_id }}">
+                                                    {{ $s->doctor?->user?->fullName() }} — {{ $s->duty_date->format('M d, Y') }} {{ \Carbon\Carbon::parse($s->start_time)->format('g:i A') }}
+                                                </option>
+                                            @endif
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div style="display:flex;gap:6px;">
+                                    <button type="submit" class="btn btn-small">Confirm Reschedule</button>
+                                    <button type="button" class="btn btn-small btn-outline"
+                                            onclick="toggleRescheduleForm('resched-appt-{{ $a->appointment_id }}')">Back</button>
+                                </div>
+                            </form>
+                        </td>
+                    </tr>
                 @endforeach
             </table>
         </div>
@@ -71,7 +101,7 @@
     @else
         <div class="table-card">
             <table>
-                <tr><th>Date &amp; Time</th><th>Tests</th><th>Status</th><th></th></tr>
+                <tr><th>Date &amp; Time</th><th>Tests</th><th>Status</th><th style="width:1%;white-space:nowrap;"></th></tr>
                 @foreach($labAppointments as $la)
                     <tr>
                         <td>{{ $la->scheduled_at?->format('M d, Y g:i A') }}</td>
@@ -121,6 +151,10 @@ function toggleVoidForm(id) {
     if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
 }
 function toggleLabCancelForm(id) {
+    var el = document.getElementById(id);
+    if (el) el.style.display = el.style.display === 'none' ? 'table-row' : 'none';
+}
+function toggleRescheduleForm(id) {
     var el = document.getElementById(id);
     if (el) el.style.display = el.style.display === 'none' ? 'table-row' : 'none';
 }
