@@ -2,7 +2,7 @@
     <div class="form-group">
         <label for="lab_category_id">Category <span class="req">*</span></label>
         <select name="lab_category_id" id="lab_category_id" required>
-            <option value="">— Select —</option>
+            <option value="" disabled selected hidden></option>
             @foreach($categories as $c)
                 <option value="{{ $c->lab_category_id }}"
                     @selected(old('lab_category_id', $test?->lab_category_id) == $c->lab_category_id)>

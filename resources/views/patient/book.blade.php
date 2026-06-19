@@ -20,7 +20,7 @@
                 <label for="patient_id">Book For <span class="req">*</span></label>
                 <select name="patient_id" id="patient_id"
                         class="{{ $errors->has('patient_id') ? 'is-error' : '' }}" required>
-                    <option value="">— Select Patient —</option>
+                    <option value="" disabled selected hidden></option>
                     @foreach($patients as $p)
                         <option value="{{ $p->patient_id }}" @selected(old('patient_id') == $p->patient_id)>
                             {{ $p->user->fullName() }}
@@ -61,15 +61,6 @@
                     <option value="Walk-in"   @selected(old('appointment_type') === 'Walk-in')>Walk-in</option>
                     <option value="Follow-up" @selected(old('appointment_type') === 'Follow-up')>Follow-up</option>
                 </select>
-            </div>
-            <div class="form-group">
-                <label for="preferred_time">Preferred Time</label>
-                <input type="time" name="preferred_time" id="preferred_time"
-                       value="{{ old('preferred_time') }}"
-                       min="08:00" max="18:00" step="1800">
-                @error('preferred_time')
-                    <span class="field-error">{{ $message }}</span>
-                @enderror
             </div>
             <div class="form-group span-2">
                 <label for="reason_for_visit">Reason for Visit</label>

@@ -45,7 +45,7 @@ class AppointmentController extends Controller
             ->where('status', 'Scheduled')
             ->whereDate('duty_date', '>=', now()->toDateString())
             ->whereHas('doctor', fn ($q) => $q->where('is_active', 1))
-            ->whereDoesntHave('appointments', fn ($q) => $q->where('is_voided', 0))
+            ->whereDoesntHave('appointments', fn ($q) => $q->where('is_voided', 0)->whereNotIn('status_id', [4, 5, 6, 7]))
             ->orderBy('duty_date')->orderBy('start_time')
             ->get();
 
@@ -76,7 +76,6 @@ class AppointmentController extends Controller
         $rules = [
             'duty_session_id'  => ['required', 'integer', 'exists:doctor_duty_sessions,duty_session_id'],
             'appointment_type' => ['nullable', 'in:Scheduled,Walk-in,Follow-up'],
-            'preferred_time'   => ['nullable', 'regex:/^([01]\d|2[0-3]):[0-5]\d$/'],
             'reason_for_visit' => ['nullable', 'string'],
             'lab_tests'        => ['nullable', 'array'],
             'lab_tests.*'      => ['integer', 'exists:lab_tests,lab_test_id'],
@@ -104,17 +103,7 @@ class AppointmentController extends Controller
                     'duty_session_id' => 'Sorry, that schedule was just taken. Please pick another.',
                 ]);
             }
-            if (! empty($data['preferred_time'])) {
-                $t = $data['preferred_time'];
-                if ($t < '08:00' || $t > '18:00') {
-                    throw \Illuminate\Validation\ValidationException::withMessages([
-                        'preferred_time' => 'Preferred time must be between 8:00 AM and 6:00 PM.',
-                    ]);
-                }
-                $appointmentAt = $session->duty_date->toDateString().' '.$t.':00';
-            } else {
-                $appointmentAt = $session->duty_date->toDateString().' '.$session->start_time;
-            }
+            $appointmentAt = $session->duty_date->toDateString().' '.$session->start_time;
 
             $appointment = Appointment::create([
                 'patient_id'       => $patient->patient_id,

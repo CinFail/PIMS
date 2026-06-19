@@ -2,7 +2,7 @@
 @section('title', 'Add New Patient')
 @section('content')
     <h1>Add New Patient</h1>
-    <p class="page-subtitle">Walk-in registration. Requires email or mobile number.</p>
+    <p class="page-subtitle">Walk-in registration. All fields marked * are required.</p>
 
     <div class="btn-row">
         <a href="{{ route('receptionist.patients.index') }}" class="btn btn-outline">
@@ -38,18 +38,18 @@
                     @error('middle_name') <span class="field-error">{{ $message }}</span> @enderror
                 </div>
                 <div class="form-group">
-                    <label for="email">Email</label>
+                    <label for="email">Email <span class="req">*</span></label>
                     <input type="email" name="email" id="email"
                            value="{{ old('email') }}"
-                           class="{{ $errors->has('email') ? 'is-error' : '' }}">
+                           class="{{ $errors->has('email') ? 'is-error' : '' }}" required>
                     @error('email') <span class="field-error">{{ $message }}</span> @enderror
                 </div>
                 <div class="form-group">
-                    <label for="mobile_number">Mobile Number</label>
+                    <label for="mobile_number">Mobile Number <span class="req">*</span></label>
                     <input type="text" name="mobile_number" id="mobile_number"
                            value="{{ old('mobile_number') }}"
                            class="{{ $errors->has('mobile_number') ? 'is-error' : '' }}"
-                           data-mobile placeholder="09XX-XXX-XXXX" maxlength="13">
+                           data-mobile placeholder="09XX-XXX-XXXX" maxlength="13" required>
                     @error('mobile_number') <span class="field-error">{{ $message }}</span> @enderror
                 </div>
                 <div class="form-group">
@@ -61,17 +61,17 @@
                     @error('date_of_birth') <span class="field-error">{{ $message }}</span> @enderror
                 </div>
                 <div class="form-group">
-                    <label for="sex">Sex</label>
-                    <select name="sex" id="sex" class="{{ $errors->has('sex') ? 'is-error' : '' }}">
-                        <option value="">— Select —</option>
+                    <label for="sex">Sex <span class="req">*</span></label>
+                    <select name="sex" id="sex" class="{{ $errors->has('sex') ? 'is-error' : '' }}" required>
+                        <option value="" disabled selected hidden></option>
                         <option value="Male"   @selected(old('sex') == 'Male')>Male</option>
                         <option value="Female" @selected(old('sex') == 'Female')>Female</option>
                     </select>
                     @error('sex') <span class="field-error">{{ $message }}</span> @enderror
                 </div>
                 <div class="form-group span-2">
-                    <label for="address">Address</label>
-                    <textarea name="address" id="address">{{ old('address') }}</textarea>
+                    <label for="address">Address <span class="req">*</span></label>
+                    <textarea name="address" id="address" required>{{ old('address') }}</textarea>
                 </div>
                 <div class="form-group">
                     <label for="password">Temporary Password <span class="req">*</span></label>

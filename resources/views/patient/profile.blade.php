@@ -32,17 +32,17 @@
                     @error('middle_name') <span class="field-error">{{ $message }}</span> @enderror
                 </div>
                 <div class="form-group">
-                    <label for="mobile_number">Mobile Number</label>
+                    <label for="mobile_number">Mobile Number <span class="req">*</span></label>
                     <input type="text" name="mobile_number" id="mobile_number"
                            value="{{ old('mobile_number', $user->mobile_number) }}"
                            class="{{ $errors->has('mobile_number') ? 'is-error' : '' }}"
-                           data-mobile placeholder="09XX-XXX-XXXX" maxlength="13">
+                           data-mobile placeholder="09XX-XXX-XXXX" maxlength="13" required>
                     @error('mobile_number') <span class="field-error">{{ $message }}</span> @enderror
                 </div>
                 <div class="form-group">
-                    <label for="sex">Sex</label>
-                    <select name="sex" id="sex" class="{{ $errors->has('sex') ? 'is-error' : '' }}">
-                        <option value="">— Select —</option>
+                    <label for="sex">Sex <span class="req">*</span></label>
+                    <select name="sex" id="sex" class="{{ $errors->has('sex') ? 'is-error' : '' }}" required>
+                        <option value="" disabled selected hidden></option>
                         <option value="Male"   @selected(old('sex', $profile->sex) == 'Male')>Male</option>
                         <option value="Female" @selected(old('sex', $profile->sex) == 'Female')>Female</option>
                     </select>
@@ -62,9 +62,9 @@
         <div class="form-card">
             <div class="form-section-title">Contact &amp; Emergency</div>
             <div class="form-group">
-                <label for="address">Address</label>
+                <label for="address">Address <span class="req">*</span></label>
                 <textarea name="address" id="address"
-                          class="{{ $errors->has('address') ? 'is-error' : '' }}">{{ old('address', $profile->address) }}</textarea>
+                          class="{{ $errors->has('address') ? 'is-error' : '' }}" required>{{ old('address', $profile->address) }}</textarea>
                 @error('address') <span class="field-error">{{ $message }}</span> @enderror
             </div>
             <div class="form-grid-2">

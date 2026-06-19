@@ -60,12 +60,22 @@
             @error('email') <span class="field-error">{{ $message }}</span> @enderror
         </div>
         <div class="form-group">
-            <label for="mobile_number">Mobile Number</label>
+            <label for="mobile_number">Mobile Number <span class="req">*</span></label>
             <input type="text" name="mobile_number" id="mobile_number"
                    value="{{ old('mobile_number') }}"
                    class="{{ $errors->has('mobile_number') ? 'is-error' : '' }}"
-                   data-mobile placeholder="09XX-XXX-XXXX" maxlength="13">
+                   data-mobile placeholder="09XX-XXX-XXXX" maxlength="13" required>
             @error('mobile_number') <span class="field-error">{{ $message }}</span> @enderror
+        </div>
+        <div class="form-group">
+            <label for="sex">Sex <span class="req">*</span></label>
+            <select name="sex" id="sex"
+                    class="{{ $errors->has('sex') ? 'is-error' : '' }}" required>
+                <option value="" disabled {{ old('sex') ? '' : 'selected' }} hidden></option>
+                <option value="Male" {{ old('sex') === 'Male' ? 'selected' : '' }}>Male</option>
+                <option value="Female" {{ old('sex') === 'Female' ? 'selected' : '' }}>Female</option>
+            </select>
+            @error('sex') <span class="field-error">{{ $message }}</span> @enderror
         </div>
         <div class="form-group">
             <label for="date_of_birth">Date of Birth <span class="req">*</span></label>

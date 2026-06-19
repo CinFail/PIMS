@@ -12,7 +12,6 @@ use App\Rules\MobileNumber;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\ValidationException;
 
 class PatientController extends Controller
 {
@@ -62,11 +61,11 @@ class PatientController extends Controller
             'first_name'          => ['required', 'string', 'max:50'],
             'middle_name'         => ['nullable', 'string', 'max:50'],
             'last_name'           => ['required', 'string', 'max:50'],
-            'email'               => ['nullable', 'email', 'max:254', 'unique:users,email'],
-            'mobile_number'       => ['nullable', new MobileNumber],
+            'email'               => ['required', 'email', 'max:254', 'unique:users,email'],
+            'mobile_number'       => ['required', new MobileNumber],
             'date_of_birth'       => ['required', 'date', 'before_or_equal:today'],
-            'sex'                 => ['nullable', 'in:Male,Female'],
-            'address'             => ['nullable', 'string'],
+            'sex'                 => ['required', 'in:Male,Female'],
+            'address'             => ['required', 'string'],
             'password'            => ['required', 'string', 'min:6'],
             'allergies'           => ['nullable', 'string'],
             'chronic_conditions'  => ['nullable', 'string'],
@@ -75,20 +74,13 @@ class PatientController extends Controller
             'family_history'      => ['nullable', 'string'],
         ]);
 
-        // Business rule: at least one contact channel must be provided.
-        if (empty($data['email']) && empty($data['mobile_number'])) {
-            throw ValidationException::withMessages([
-                'email' => 'Please provide either an email OR a mobile number.',
-            ]);
-        }
-
         $user = DB::transaction(function () use ($data) {
             $user = User::create([
                 'first_name'                  => $data['first_name'],
                 'middle_name'                 => $data['middle_name'] ?? null,
                 'last_name'                   => $data['last_name'],
-                'email'                       => $data['email'] ?? ('walkin_'.uniqid().'@clinic.local'),
-                'mobile_number'               => $data['mobile_number'] ?? null,
+                'email'                       => $data['email'],
+                'mobile_number'               => $data['mobile_number'],
                 'date_of_birth'               => $data['date_of_birth'],
                 'password_hash'               => Hash::make($data['password']),
                 'account_status'              => 'Active',
@@ -99,8 +91,8 @@ class PatientController extends Controller
 
             $profile = PatientProfile::create([
                 'user_id' => $user->user_id,
-                'sex'     => $data['sex'] ?? null,
-                'address' => $data['address'] ?? null,
+                'sex'     => $data['sex'],
+                'address' => $data['address'],
             ]);
 
             PatientMedicalHistory::create([

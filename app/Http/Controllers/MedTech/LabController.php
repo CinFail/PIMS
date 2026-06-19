@@ -36,16 +36,21 @@ class LabController extends Controller
     /** Save the result. Sets workflow_status = Encoded — admin/medtech must release separately. */
     public function storeResult(Request $request, int $itemId)
     {
-        $item    = LabRequestItem::with('request')->findOrFail($itemId);
+        $item    = LabRequestItem::with(['request', 'result'])->findOrFail($itemId);
         $medtech = Auth::user()->medTechProfile;
 
+        $hasExistingFile = $item->result?->result_file_path !== null;
+
         $data = $request->validate([
-            'result_value'    => ['nullable', 'required_without:result_file', 'string', 'max:255'],
+            'result_value'    => ['nullable', 'numeric'],
             'unit'            => ['nullable', 'string', 'max:20'],
             'reference_range' => ['nullable', 'string', 'max:50'],
             'abnormal_flag'   => ['required', 'in:High,Low,Normal,Critical'],
             'remarks'         => ['nullable', 'string'],
-            'result_file'     => ['nullable', 'required_without:result_value', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
+            'result_file'     => array_merge(
+                $hasExistingFile ? ['nullable'] : ['required'],
+                ['file', 'mimes:pdf,jpg,jpeg,png', 'max:5120']
+            ),
         ]);
 
         $filePath = null;
@@ -90,7 +95,7 @@ class LabController extends Controller
     /** Release an Encoded result — patient can view it after this. */
     public function releaseResult(int $itemId)
     {
-        $item = LabRequestItem::with(['request', 'result'])->findOrFail($itemId);
+        $item = LabRequestItem::with(['request.labAppointment', 'result'])->findOrFail($itemId);
 
         if (! $item->result || $item->result->workflow_status !== 'Encoded' || $item->result->is_voided) {
             return back()->withErrors(['release' => 'This result cannot be released in its current state.']);
@@ -111,6 +116,7 @@ class LabController extends Controller
 
             if ($remaining === 0) {
                 $item->request->update(['status' => 'Completed']);
+                $item->request->labAppointment?->update(['status' => 'Completed']);
             }
         });
 

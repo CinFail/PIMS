@@ -17,6 +17,7 @@ class VoidRequestController extends Controller
         'lab_results'       => 'result_id',
         'lab_requests'      => 'lab_request_id',
         'lab_request_items' => 'request_item_id',
+        'lab_appointments'  => 'lab_appointment_id',
         'appointments'      => 'appointment_id',
         'prescriptions'     => 'prescription_id',
     ];
@@ -27,6 +28,7 @@ class VoidRequestController extends Controller
         'lab_results'       => 'Lab Result',
         'lab_requests'      => 'Lab Request',
         'lab_request_items' => 'Lab Request Item',
+        'lab_appointments'  => 'Lab Appointment',
         'appointments'      => 'Appointment',
         'prescriptions'     => 'Prescription',
     ];
@@ -39,10 +41,27 @@ class VoidRequestController extends Controller
             ->orderByDesc('created_at')
             ->paginate(20);
 
+        // Detect which 'Approved' requests have already had their target records restored
+        // by checking the live record state — avoids needing 'Restored' in the status ENUM.
+        $restoredVrIds = [];
+        foreach ($requests as $vr) {
+            if ($vr->status !== 'Approved') continue;
+            $pk = self::VOIDABLE[$vr->table_name] ?? null;
+            if (! $pk) continue;
+            $record = DB::table($vr->table_name)->where($pk, $vr->record_id)->first();
+            if (! $record) continue;
+            $isRestored = ($vr->table_name === 'lab_appointments')
+                ? $record->status !== 'Cancelled'
+                : ! $record->is_voided;
+            if ($isRestored) {
+                $restoredVrIds[] = $vr->id;
+            }
+        }
+
         $voidableTables = array_keys(self::VOIDABLE);
         $tableLabels    = self::TABLE_LABELS;
 
-        return view('admin.void_requests', compact('requests', 'voidableTables', 'tableLabels'));
+        return view('admin.void_requests', compact('requests', 'voidableTables', 'tableLabels', 'restoredVrIds'));
     }
 
     /** Doctor, MedTech, or Patient (for own appointments) submits a void request. */
@@ -58,14 +77,19 @@ class VoidRequestController extends Controller
         $user = Auth::user();
 
         if ($user->hasRole('patient')) {
-            // Patients may only request voids for their own appointments.
-            if ($data['table_name'] !== 'appointments') {
-                abort(403, 'Patients may only submit void requests for their own appointments.');
-            }
             $patient = $user->patientProfile;
-            $appt    = DB::table('appointments')->where('appointment_id', $data['record_id'])->first();
-            if (! $appt || ! $patient || $appt->patient_id !== $patient->patient_id) {
-                abort(403, 'That appointment does not belong to you.');
+            if ($data['table_name'] === 'appointments') {
+                $appt = DB::table('appointments')->where('appointment_id', $data['record_id'])->first();
+                if (! $appt || ! $patient || $appt->patient_id !== $patient->patient_id) {
+                    abort(403, 'That appointment does not belong to you.');
+                }
+            } elseif ($data['table_name'] === 'lab_appointments') {
+                $labAppt = DB::table('lab_appointments')->where('lab_appointment_id', $data['record_id'])->first();
+                if (! $labAppt || ! $patient || $labAppt->patient_id !== $patient->patient_id) {
+                    abort(403, 'That lab appointment does not belong to you.');
+                }
+            } else {
+                abort(403, 'Patients may only submit void requests for their own appointments.');
             }
         } elseif (! $user->doctorProfile && ! $user->medTechProfile && ! $user->hasRole('super_admin')) {
             abort(403, 'You do not have permission to submit void requests.');
@@ -78,7 +102,11 @@ class VoidRequestController extends Controller
             return back()->withErrors(['reason' => 'Record not found.']);
         }
 
-        if ($record->is_voided) {
+        $alreadyVoided = ($data['table_name'] === 'lab_appointments')
+            ? $record->status === 'Cancelled'
+            : (bool) $record->is_voided;
+
+        if ($alreadyVoided) {
             return back()->withErrors(['reason' => 'This record is already voided.']);
         }
 
@@ -112,12 +140,16 @@ class VoidRequestController extends Controller
         $pk = self::VOIDABLE[$vr->table_name] ?? 'id';
 
         DB::transaction(function () use ($vr, $pk) {
-            DB::table($vr->table_name)->where($pk, $vr->record_id)->update([
-                'is_voided'        => 1,
-                'void_at'          => now(),
-                'void_reason'      => $vr->reason,
-                'void_approved_by' => Auth::id(),
-            ]);
+            if ($vr->table_name === 'lab_appointments') {
+                DB::table('lab_appointments')->where($pk, $vr->record_id)->update(['status' => 'Cancelled']);
+            } else {
+                DB::table($vr->table_name)->where($pk, $vr->record_id)->update([
+                    'is_voided'        => 1,
+                    'void_at'          => now(),
+                    'void_reason'      => $vr->reason,
+                    'void_approved_by' => Auth::id(),
+                ]);
+            }
 
             $vr->update([
                 'status'      => 'Approved',
@@ -143,7 +175,7 @@ class VoidRequestController extends Controller
             'reviewed_at' => now(),
         ]);
 
-        AuditLogger::log('UPDATE', 'Clinical', $vr->table_name, $vr->record_id,
+        AuditLogger::log('REJECT', 'Clinical', $vr->table_name, $vr->record_id,
             'Admin rejected void request #' . $vr->id);
 
         return back()->with('status', 'Void request rejected.');
@@ -165,16 +197,24 @@ class VoidRequestController extends Controller
             return back()->withErrors(['admin_reason' => 'Record not found.']);
         }
 
-        if ($record->is_voided) {
+        $alreadyVoided = ($data['table_name'] === 'lab_appointments')
+            ? $record->status === 'Cancelled'
+            : (bool) $record->is_voided;
+
+        if ($alreadyVoided) {
             return back()->withErrors(['admin_reason' => 'This record is already voided.']);
         }
 
-        DB::table($data['table_name'])->where($pk, $data['record_id'])->update([
-            'is_voided'        => 1,
-            'void_at'          => now(),
-            'void_reason'      => $data['admin_reason'],
-            'void_approved_by' => Auth::id(),
-        ]);
+        if ($data['table_name'] === 'lab_appointments') {
+            DB::table('lab_appointments')->where($pk, $data['record_id'])->update(['status' => 'Cancelled']);
+        } else {
+            DB::table($data['table_name'])->where($pk, $data['record_id'])->update([
+                'is_voided'        => 1,
+                'void_at'          => now(),
+                'void_reason'      => $data['admin_reason'],
+                'void_approved_by' => Auth::id(),
+            ]);
+        }
 
         AuditLogger::log('VOID', 'Clinical', $data['table_name'], $data['record_id'],
             'Admin directly voided record: ' . $data['admin_reason']);
@@ -194,18 +234,41 @@ class VoidRequestController extends Controller
             return back()->withErrors(['restore' => 'Record not found.']);
         }
 
-        if (! $record->is_voided) {
-            return back()->withErrors(['restore' => 'This record is not currently voided.']);
+        if ($vr->table_name === 'lab_appointments') {
+            if ($record->status !== 'Cancelled') {
+                return back()->withErrors(['restore' => 'This lab appointment is not currently cancelled.']);
+            }
+        } else {
+            if (! $record->is_voided) {
+                return back()->withErrors(['restore' => 'This record is not currently voided.']);
+            }
+
+            // For appointments: verify the duty session is still available before restoring.
+            if ($vr->table_name === 'appointments' && ! empty($record->duty_session_id)) {
+                $slotTaken = DB::table('appointments')
+                    ->where('duty_session_id', $record->duty_session_id)
+                    ->where('is_voided', 0)
+                    ->whereNotIn('status_id', [4, 5, 6, 7])
+                    ->where('appointment_id', '!=', $vr->record_id)
+                    ->exists();
+                if ($slotTaken) {
+                    return back()->withErrors(['restore' => 'Doctor unavailable: the duty session is already booked by another patient\'s appointment.']);
+                }
+            }
         }
 
-        DB::table($vr->table_name)->where($pk, $vr->record_id)->update([
-            'is_voided'        => 0,
-            'void_at'          => null,
-            'void_reason'      => null,
-            'void_approved_by' => null,
-        ]);
+        if ($vr->table_name === 'lab_appointments') {
+            DB::table('lab_appointments')->where($pk, $vr->record_id)->update(['status' => 'Scheduled']);
+        } else {
+            DB::table($vr->table_name)->where($pk, $vr->record_id)->update([
+                'is_voided'        => 0,
+                'void_at'          => null,
+                'void_reason'      => null,
+                'void_approved_by' => null,
+            ]);
+        }
 
-        AuditLogger::log('UPDATE', 'Clinical', $vr->table_name, $vr->record_id,
+        AuditLogger::log('RESTORE', 'Clinical', $vr->table_name, $vr->record_id,
             'Admin restored voided record (reversed void request #' . $vr->id . ')');
 
         return back()->with('status', 'Record restored successfully.');

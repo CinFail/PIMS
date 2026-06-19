@@ -111,7 +111,7 @@
                     <div class="form-group">
                         <label for="sex">Sex</label>
                         <select name="sex" id="sex" class="{{ $errors->has('sex') ? 'is-error' : '' }}">
-                            <option value="">— Select —</option>
+                            <option value="" disabled selected hidden></option>
                             <option value="Male"   @selected(old('sex') == 'Male')>Male</option>
                             <option value="Female" @selected(old('sex') == 'Female')>Female</option>
                         </select>

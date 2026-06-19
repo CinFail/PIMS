@@ -18,7 +18,7 @@ class AuditLogger
 {
     /**
      * @param  string  $action  One of: CREATE, UPDATE, DELETE, VIEW, LOGIN,
-     *                           LOGOUT, VOID, APPROVE, UPLOAD, REQUEST
+     *                           LOGOUT, VOID, APPROVE, UPLOAD, REQUEST, REJECT, RESTORE
      * @param  string  $module  Domain name, e.g. "Laboratory", "Appointments"
      */
     public static function log(

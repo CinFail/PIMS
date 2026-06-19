@@ -29,7 +29,8 @@ class RegisterController extends Controller
             'middle_name'   => ['nullable', 'string', 'max:50'],
             'last_name'     => ['required', 'string', 'max:50'],
             'email'         => ['required', 'email', 'max:254', 'unique:users,email'],
-            'mobile_number' => ['nullable', new MobileNumber],
+            'mobile_number' => ['required', new MobileNumber],
+            'sex'           => ['required', 'in:Male,Female'],
             'date_of_birth' => ['required', 'date', 'before_or_equal:today'],
             'password'      => ['required', 'string', 'min:6', 'confirmed'],
             'consent'       => ['required', 'accepted'],
@@ -42,7 +43,7 @@ class RegisterController extends Controller
                 'middle_name'                 => $data['middle_name'] ?? null,
                 'last_name'                   => $data['last_name'],
                 'email'                       => $data['email'],
-                'mobile_number'               => $data['mobile_number'] ?? null,
+                'mobile_number'               => $data['mobile_number'],
                 'date_of_birth'               => $data['date_of_birth'],
                 'password_hash'               => Hash::make($data['password']),
                 'account_status'              => 'Active',
@@ -51,7 +52,7 @@ class RegisterController extends Controller
                 'is_otp_bypassed'             => 0,
             ]);
 
-            PatientProfile::create(['user_id' => $user->user_id]);
+            PatientProfile::create(['user_id' => $user->user_id, 'sex' => $data['sex']]);
 
             $patientRole = Role::where('name', 'patient')->first();
             if ($patientRole) {

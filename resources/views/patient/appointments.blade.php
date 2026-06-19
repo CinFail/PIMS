@@ -71,7 +71,7 @@
     @else
         <div class="table-card">
             <table>
-                <tr><th>Date &amp; Time</th><th>Tests</th><th>Status</th></tr>
+                <tr><th>Date &amp; Time</th><th>Tests</th><th>Status</th><th></th></tr>
                 @foreach($labAppointments as $la)
                     <tr>
                         <td>{{ $la->scheduled_at?->format('M d, Y g:i A') }}</td>
@@ -83,7 +83,32 @@
                             @endif
                         </td>
                         <td>{{ $la->status }}</td>
+                        <td class="row-actions">
+                            @if($la->status === 'Scheduled' && $la->scheduled_at?->isFuture())
+                                <button type="button" class="btn btn-small btn-outline"
+                                        onclick="toggleLabCancelForm('lab-cancel-{{ $la->lab_appointment_id }}')">Cancel Request</button>
+                            @endif
+                        </td>
                     </tr>
+                    @if($la->status === 'Scheduled' && $la->scheduled_at?->isFuture())
+                        <tr id="lab-cancel-{{ $la->lab_appointment_id }}" style="display:none;">
+                            <td colspan="4" style="padding:10px 12px;background:#fafafa;">
+                                <form action="{{ route('void.store') }}" method="POST">
+                                    @csrf
+                                    <input type="hidden" name="table_name" value="lab_appointments">
+                                    <input type="hidden" name="record_id" value="{{ $la->lab_appointment_id }}">
+                                    <div class="form-group" style="margin-bottom:6px;">
+                                        <textarea name="reason" placeholder="Reason for cancellation request (min 10 characters)" style="width:100%;min-height:60px;" required minlength="10"></textarea>
+                                    </div>
+                                    <div style="display:flex;gap:6px;">
+                                        <button type="submit" class="btn btn-small">Submit Request</button>
+                                        <button type="button" class="btn btn-small btn-outline"
+                                                onclick="toggleLabCancelForm('lab-cancel-{{ $la->lab_appointment_id }}')">Back</button>
+                                    </div>
+                                </form>
+                            </td>
+                        </tr>
+                    @endif
                 @endforeach
             </table>
         </div>
@@ -94,6 +119,10 @@
 function toggleVoidForm(id) {
     var el = document.getElementById(id);
     if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+function toggleLabCancelForm(id) {
+    var el = document.getElementById(id);
+    if (el) el.style.display = el.style.display === 'none' ? 'table-row' : 'none';
 }
 </script>
 @endpush

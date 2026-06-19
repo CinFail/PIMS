@@ -5,7 +5,7 @@
 <div class="form-group">
     <label for="doctor_id">Doctor <span class="req">*</span></label>
     <select name="doctor_id" id="doctor_id" required>
-        <option value="">— Select Doctor —</option>
+        <option value="" disabled selected hidden></option>
         @foreach($doctors as $d)
             <option value="{{ $d->doctor_id }}"
                 @selected(old('doctor_id', $session->doctor_id ?? '') == $d->doctor_id)>

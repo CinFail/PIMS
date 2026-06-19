@@ -67,7 +67,7 @@ Route::middleware('auth')->group(function () {
         Route::put('profile', [PatientProfileController::class, 'update'])->name('profile.update');
     });
 
-    // Patient — view own appointments (patient role + permission)
+    // Patient — view own appointments
     Route::middleware(['role:patient', 'permission:book-appointment'])->prefix('patient')->name('patient.')->group(function () {
         Route::get('appointments', [PatientAppointmentController::class, 'index'])->name('appointments.index');
     });
@@ -92,6 +92,9 @@ Route::middleware('auth')->group(function () {
         Route::post('appointments/{appointmentId}/status', [DoctorAppointmentController::class, 'updateStatus'])->name('appointments.status');
         Route::get('consultations/{consultationId}', [ConsultationController::class, 'show'])->name('consultation.show');
         Route::put('consultations/{consultationId}', [ConsultationController::class, 'update'])->name('consultation.update');
+        Route::patch('diagnoses/{diagnosisId}', [ConsultationController::class, 'updateDiagnosis'])->name('diagnosis.update');
+        Route::patch('prescriptions/{prescriptionId}', [ConsultationController::class, 'updatePrescription'])->name('prescription.update');
+        Route::patch('prescription-items/{itemId}', [ConsultationController::class, 'updatePrescriptionItem'])->name('prescription.item.update');
         Route::post('patients/{patientId}/consultation', [PatientChartController::class, 'startConsultation'])->name('patients.consultation');
     });
 
@@ -183,6 +186,7 @@ Route::middleware('auth')->group(function () {
         Route::get('lab-categories/{id}/edit', [LabCategoryController::class, 'edit'])->name('lab-categories.edit');
         Route::put('lab-categories/{id}', [LabCategoryController::class, 'update'])->name('lab-categories.update');
         Route::delete('lab-categories/{id}', [LabCategoryController::class, 'destroy'])->name('lab-categories.destroy');
+        Route::patch('lab-categories/{id}/toggle', [LabCategoryController::class, 'toggleActive'])->name('lab-categories.toggle');
 
         Route::get('lab-tests', [LabTestController::class, 'index'])->name('lab-tests.index');
         Route::get('lab-tests/new', [LabTestController::class, 'create'])->name('lab-tests.create');
@@ -190,6 +194,7 @@ Route::middleware('auth')->group(function () {
         Route::get('lab-tests/{id}/edit', [LabTestController::class, 'edit'])->name('lab-tests.edit');
         Route::put('lab-tests/{id}', [LabTestController::class, 'update'])->name('lab-tests.update');
         Route::delete('lab-tests/{id}', [LabTestController::class, 'destroy'])->name('lab-tests.destroy');
+        Route::patch('lab-tests/{id}/toggle', [LabTestController::class, 'toggleActive'])->name('lab-tests.toggle');
 
         Route::get('doctor-schedules', [DoctorScheduleController::class, 'index'])->name('doctor-schedules.index');
         Route::get('doctor-schedules/new', [DoctorScheduleController::class, 'create'])->name('doctor-schedules.create');
@@ -197,5 +202,6 @@ Route::middleware('auth')->group(function () {
         Route::get('doctor-schedules/{id}/edit', [DoctorScheduleController::class, 'edit'])->name('doctor-schedules.edit');
         Route::put('doctor-schedules/{id}', [DoctorScheduleController::class, 'update'])->name('doctor-schedules.update');
         Route::delete('doctor-schedules/{id}', [DoctorScheduleController::class, 'destroy'])->name('doctor-schedules.destroy');
+        Route::patch('doctor-schedules/{id}/toggle', [DoctorScheduleController::class, 'toggleActive'])->name('doctor-schedules.toggle');
     });
 });

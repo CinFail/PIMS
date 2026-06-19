@@ -4,6 +4,13 @@
     <h1>Void Requests</h1>
     <p class="page-subtitle">Pending void requests submitted by doctors and medical technologists. Approve to permanently void the record, or reject to leave it unchanged.</p>
 
+    @if(session('status'))
+        <div class="alert alert-success">{{ session('status') }}</div>
+    @endif
+    @error('restore')
+        <div class="alert alert-error"><strong>{{ $message }}</strong></div>
+    @enderror
+
     {{-- Direct Void --}}
     <details class="form-card" style="margin-bottom:20px;">
         <summary style="font-weight:600;cursor:pointer;list-style:none;display:flex;align-items:center;gap:6px;">
@@ -17,7 +24,7 @@
                     <div class="form-group">
                         <label>Table</label>
                         <select name="table_name" required>
-                            <option value="">— Select Table —</option>
+                            <option value="" disabled selected hidden></option>
                             @foreach($tableLabels as $table => $label)
                                 <option value="{{ $table }}">{{ $label }}</option>
                             @endforeach
@@ -69,7 +76,11 @@
                             @if($vr->status === 'Pending')
                                 <span class="tag" style="background:#e67e22;color:#fff;">Pending</span>
                             @elseif($vr->status === 'Approved')
-                                <span class="tag" style="background:#27ae60;color:#fff;">Approved</span>
+                                @if(in_array($vr->id, $restoredVrIds))
+                                    <span class="tag" style="background:#2980b9;color:#fff;">Restored</span>
+                                @else
+                                    <span class="tag" style="background:#27ae60;color:#fff;">Approved</span>
+                                @endif
                                 <div class="muted" style="font-size:0.8em;">by {{ $vr->reviewer?->fullName() }} &bull; {{ $vr->reviewed_at?->format('M d, Y') }}</div>
                             @else
                                 <span class="tag" style="background:#7f8c8d;color:#fff;">Rejected</span>
@@ -93,13 +104,17 @@
                                     </button>
                                 </form>
                             @elseif($vr->status === 'Approved')
-                                <form action="{{ route('admin.void.restore', $vr->id) }}" method="POST" class="inline-form">
-                                    @csrf
-                                    <button type="submit" class="btn btn-small btn-outline"
-                                            onclick="return confirm('Restore this record? This will clear the void and make the record active again.')">
-                                        <i class="bi bi-arrow-counterclockwise"></i> Restore
-                                    </button>
-                                </form>
+                                @if(in_array($vr->id, $restoredVrIds))
+                                    <span class="tag" style="background:#2980b9;color:#fff;">Restored</span>
+                                @else
+                                    <form action="{{ route('admin.void.restore', $vr->id) }}" method="POST" class="inline-form">
+                                        @csrf
+                                        <button type="submit" class="btn btn-small btn-outline"
+                                                onclick="return confirm('Restore this record? This will clear the void and make the record active again.')">
+                                            <i class="bi bi-arrow-counterclockwise"></i> Restore
+                                        </button>
+                                    </form>
+                                @endif
                             @endif
                         </td>
                     </tr>
@@ -111,4 +126,5 @@
             {{ $requests->links() }}
         </div>
     @endif
+
 @endsection

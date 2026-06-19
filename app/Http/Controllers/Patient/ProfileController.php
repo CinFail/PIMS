@@ -34,9 +34,9 @@ class ProfileController extends Controller
             'first_name'               => ['required', 'string', 'max:50'],
             'middle_name'              => ['nullable', 'string', 'max:50'],
             'last_name'                => ['required', 'string', 'max:50'],
-            'mobile_number'            => ['nullable', new MobileNumber],
-            'sex'                      => ['nullable', 'in:Male,Female'],
-            'address'                  => ['nullable', 'string'],
+            'mobile_number'            => ['required', new MobileNumber],
+            'sex'                      => ['required', 'in:Male,Female'],
+            'address'                  => ['required', 'string'],
             'blood_type'               => ['nullable', 'string', 'max:5'],
             'emergency_contact_name'   => ['nullable', 'string', 'max:100'],
             'emergency_contact_number' => ['nullable', new MobileNumber],
@@ -56,12 +56,12 @@ class ProfileController extends Controller
             'first_name'    => $data['first_name'],
             'middle_name'   => $data['middle_name'] ?? null,
             'last_name'     => $data['last_name'],
-            'mobile_number' => $data['mobile_number'] ?? null,
+            'mobile_number' => $data['mobile_number'],
         ]);
 
         $profile->update([
-            'sex'                      => $data['sex'] ?? null,
-            'address'                  => $data['address'] ?? null,
+            'sex'                      => $data['sex'],
+            'address'                  => $data['address'],
             'blood_type'               => $data['blood_type'] ?? null,
             'emergency_contact_name'   => $data['emergency_contact_name'] ?? null,
             'emergency_contact_number' => $data['emergency_contact_number'] ?? null,

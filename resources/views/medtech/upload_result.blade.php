@@ -20,13 +20,14 @@
             <div class="form-grid-2">
                 <div class="form-group">
                     <label for="result_value">Result Value</label>
-                    <input type="text" name="result_value" id="result_value"
+                    <input type="number" step="any" name="result_value" id="result_value"
                            value="{{ old('result_value', $item->result?->result_value) }}">
                 </div>
                 <div class="form-group">
                     <label for="unit">Unit</label>
                     <input type="text" name="unit" id="unit"
-                           value="{{ old('unit', $item->result?->unit ?? $item->test?->default_unit) }}">
+                           value="{{ old('unit', $item->result?->unit ?? $item->test?->default_unit) }}"
+                           placeholder="mg/dL">
                 </div>
                 <div class="form-group">
                     <label for="reference_range">Reference Range</label>
@@ -49,11 +50,11 @@
                     <textarea name="remarks" id="remarks">{{ old('remarks', $item->result?->remarks) }}</textarea>
                 </div>
                 <div class="form-group span-2">
-                    <label for="result_file">Soft Copy (PDF or image)</label>
-                    <p class="muted" style="font-size:0.85em;margin-bottom:6px;">
-                        Either a result value <strong>or</strong> a file is required. Both are accepted.
-                    </p>
-                    <input type="file" name="result_file" id="result_file" accept=".pdf,.jpg,.jpeg,.png">
+                    <label for="result_file">Soft Copy (PDF or image)
+                        @if(!$item->result?->result_file_path) <span class="req">*</span> @endif
+                    </label>
+                    <input type="file" name="result_file" id="result_file" accept=".pdf,.jpg,.jpeg,.png"
+                           {{ $item->result?->result_file_path ? '' : 'required' }}>
                     @if($item->result?->result_file_path)
                         <span style="color:var(--text-muted);font-size:0.85em;display:block;margin-top:4px;">
                             Current file: <a href="{{ asset('storage/'.$item->result->result_file_path) }}" target="_blank">view file</a>
