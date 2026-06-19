@@ -21,6 +21,16 @@ class VoidRequestController extends Controller
         'prescriptions'     => 'prescription_id',
     ];
 
+    private const TABLE_LABELS = [
+        'diagnoses'         => 'Diagnosis',
+        'consultations'     => 'Consultation',
+        'lab_results'       => 'Lab Result',
+        'lab_requests'      => 'Lab Request',
+        'lab_request_items' => 'Lab Request Item',
+        'appointments'      => 'Appointment',
+        'prescriptions'     => 'Prescription',
+    ];
+
     /** Admin queue: pending first, then resolved. */
     public function index()
     {
@@ -29,22 +39,37 @@ class VoidRequestController extends Controller
             ->orderByDesc('created_at')
             ->paginate(20);
 
-        return view('admin.void_requests', compact('requests'));
+        $voidableTables = array_keys(self::VOIDABLE);
+        $tableLabels    = self::TABLE_LABELS;
+
+        return view('admin.void_requests', compact('requests', 'voidableTables', 'tableLabels'));
     }
 
-    /** Doctor or MedTech submits a void request. */
+    /** Doctor, MedTech, or Patient (for own appointments) submits a void request. */
     public function store(Request $request)
     {
-        $user = Auth::user();
-        if (! $user->doctorProfile && ! $user->medTechProfile && ! $user->hasRole('super_admin')) {
-            abort(403, 'Only doctors, medical technologists, and administrators can submit void requests.');
-        }
-
         $data = $request->validate([
             'table_name' => ['required', 'string', 'in:' . implode(',', array_keys(self::VOIDABLE))],
             'record_id'  => ['required', 'integer', 'min:1'],
             'reason'     => ['required', 'string', 'min:10', 'max:1000'],
         ]);
+
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
+        if ($user->hasRole('patient')) {
+            // Patients may only request voids for their own appointments.
+            if ($data['table_name'] !== 'appointments') {
+                abort(403, 'Patients may only submit void requests for their own appointments.');
+            }
+            $patient = $user->patientProfile;
+            $appt    = DB::table('appointments')->where('appointment_id', $data['record_id'])->first();
+            if (! $appt || ! $patient || $appt->patient_id !== $patient->patient_id) {
+                abort(403, 'That appointment does not belong to you.');
+            }
+        } elseif (! $user->doctorProfile && ! $user->medTechProfile && ! $user->hasRole('super_admin')) {
+            abort(403, 'You do not have permission to submit void requests.');
+        }
 
         $pk     = self::VOIDABLE[$data['table_name']];
         $record = DB::table($data['table_name'])->where($pk, $data['record_id'])->first();
@@ -122,5 +147,67 @@ class VoidRequestController extends Controller
             'Admin rejected void request #' . $vr->id);
 
         return back()->with('status', 'Void request rejected.');
+    }
+
+    /** Admin directly voids a record without going through the request queue. */
+    public function adminVoid(Request $request)
+    {
+        $data = $request->validate([
+            'table_name'   => ['required', 'string', 'in:' . implode(',', array_keys(self::VOIDABLE))],
+            'record_id'    => ['required', 'integer', 'min:1'],
+            'admin_reason' => ['required', 'string', 'min:10', 'max:1000'],
+        ]);
+
+        $pk     = self::VOIDABLE[$data['table_name']];
+        $record = DB::table($data['table_name'])->where($pk, $data['record_id'])->first();
+
+        if (! $record) {
+            return back()->withErrors(['admin_reason' => 'Record not found.']);
+        }
+
+        if ($record->is_voided) {
+            return back()->withErrors(['admin_reason' => 'This record is already voided.']);
+        }
+
+        DB::table($data['table_name'])->where($pk, $data['record_id'])->update([
+            'is_voided'        => 1,
+            'void_at'          => now(),
+            'void_reason'      => $data['admin_reason'],
+            'void_approved_by' => Auth::id(),
+        ]);
+
+        AuditLogger::log('VOID', 'Clinical', $data['table_name'], $data['record_id'],
+            'Admin directly voided record: ' . $data['admin_reason']);
+
+        return back()->with('status', 'Record voided directly.');
+    }
+
+    /** Admin restores a voided record, reversing an approved void. */
+    public function restore(int $id)
+    {
+        $vr = VoidRequest::where('status', 'Approved')->findOrFail($id);
+        $pk = self::VOIDABLE[$vr->table_name] ?? 'id';
+
+        $record = DB::table($vr->table_name)->where($pk, $vr->record_id)->first();
+
+        if (! $record) {
+            return back()->withErrors(['restore' => 'Record not found.']);
+        }
+
+        if (! $record->is_voided) {
+            return back()->withErrors(['restore' => 'This record is not currently voided.']);
+        }
+
+        DB::table($vr->table_name)->where($pk, $vr->record_id)->update([
+            'is_voided'        => 0,
+            'void_at'          => null,
+            'void_reason'      => null,
+            'void_approved_by' => null,
+        ]);
+
+        AuditLogger::log('UPDATE', 'Clinical', $vr->table_name, $vr->record_id,
+            'Admin restored voided record (reversed void request #' . $vr->id . ')');
+
+        return back()->with('status', 'Record restored successfully.');
     }
 }

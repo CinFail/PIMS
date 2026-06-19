@@ -89,7 +89,9 @@ Route::middleware('auth')->group(function () {
     // Doctor — consultation management (doctor role + permission)
     Route::middleware(['role:doctor', 'permission:manage-consultation'])->prefix('doctor')->name('doctor.')->group(function () {
         Route::get('appointments', [DoctorAppointmentController::class, 'index'])->name('appointments.index');
+        Route::post('appointments/{appointmentId}/status', [DoctorAppointmentController::class, 'updateStatus'])->name('appointments.status');
         Route::get('consultations/{consultationId}', [ConsultationController::class, 'show'])->name('consultation.show');
+        Route::put('consultations/{consultationId}', [ConsultationController::class, 'update'])->name('consultation.update');
         Route::post('patients/{patientId}/consultation', [PatientChartController::class, 'startConsultation'])->name('patients.consultation');
     });
 
@@ -107,6 +109,7 @@ Route::middleware('auth')->group(function () {
     // Doctor — issue prescription (doctor role + permission)
     Route::middleware(['role:doctor', 'permission:issue-prescription'])->prefix('doctor')->name('doctor.')->group(function () {
         Route::post('consultations/{consultationId}/prescription', [ConsultationController::class, 'storePrescription'])->name('consultation.prescription');
+        Route::delete('prescription-items/{itemId}', [ConsultationController::class, 'destroyItem'])->name('prescription.item.destroy');
     });
 
     // MedTech — process lab requests (medtech role + permission)
@@ -163,11 +166,13 @@ Route::middleware('auth')->group(function () {
         Route::post('users/{userId}/toggle', [UserController::class, 'toggleStatus'])->name('users.toggle');
     });
 
-    // Void request queue — admin approval
+    // Void request queue — admin approval, direct void, restore
     Route::middleware('permission:manage-maintenance')->prefix('admin')->name('admin.')->group(function () {
         Route::get('void-requests', [VoidRequestController::class, 'index'])->name('void.index');
         Route::post('void-requests/{id}/approve', [VoidRequestController::class, 'approve'])->name('void.approve');
         Route::post('void-requests/{id}/reject', [VoidRequestController::class, 'reject'])->name('void.reject');
+        Route::post('void-requests/{id}/restore', [VoidRequestController::class, 'restore'])->name('void.restore');
+        Route::post('void-direct', [VoidRequestController::class, 'adminVoid'])->name('void.admin');
     });
 
     // Maintenance — cross-role

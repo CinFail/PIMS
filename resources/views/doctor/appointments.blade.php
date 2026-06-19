@@ -26,6 +26,15 @@
                             @if($a->patient)
                                 <a href="{{ route('doctor.patients.show', $a->patient->patient_id) }}" class="btn btn-small">Open Chart</a>
                             @endif
+                            @foreach(['Completed','No Show','Cancelled'] as $newStatus)
+                                @if($a->status?->status_name !== $newStatus)
+                                    <form action="{{ route('doctor.appointments.status', $a->appointment_id) }}" method="POST" class="inline-form">
+                                        @csrf
+                                        <input type="hidden" name="status_name" value="{{ $newStatus }}">
+                                        <button type="submit" class="btn btn-small btn-outline">{{ $newStatus }}</button>
+                                    </form>
+                                @endif
+                            @endforeach
                         </td>
                     </tr>
                 @endforeach

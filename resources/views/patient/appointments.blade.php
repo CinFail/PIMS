@@ -23,13 +23,38 @@
     @else
         <div class="table-card">
             <table>
-                <tr><th>Date &amp; Time</th><th>Doctor</th><th>Type</th><th>Status</th></tr>
+                <tr><th>Date &amp; Time</th><th>Doctor</th><th>Type</th><th>Status</th><th></th></tr>
                 @foreach($appointments as $a)
                     <tr>
                         <td>{{ $a->appointment_at?->format('M d, Y g:i A') }}</td>
                         <td>{{ $a->doctor?->user?->fullName() }}</td>
                         <td>{{ $a->appointment_type }}</td>
                         <td>{{ $a->status?->status_name }}</td>
+                        <td class="row-actions">
+                            @if(!in_array($a->status?->status_name, ['Completed','Cancelled','No Show']))
+                                <button type="button" class="btn btn-small btn-outline"
+                                        onclick="toggleVoidForm('void-appt-{{ $a->appointment_id }}')">
+                                    Cancel Request
+                                </button>
+                            @endif
+                        </td>
+                    </tr>
+                    <tr id="void-appt-{{ $a->appointment_id }}" style="display:none;">
+                        <td colspan="5" style="padding:10px 12px;background:#fafafa;">
+                            <form action="{{ route('void.store') }}" method="POST">
+                                @csrf
+                                <input type="hidden" name="table_name" value="appointments">
+                                <input type="hidden" name="record_id" value="{{ $a->appointment_id }}">
+                                <div class="form-group" style="margin-bottom:6px;">
+                                    <textarea name="reason" placeholder="Reason for cancellation request (min 10 characters)" style="width:100%;min-height:60px;" required minlength="10"></textarea>
+                                </div>
+                                <div style="display:flex;gap:6px;">
+                                    <button type="submit" class="btn btn-small">Submit Request</button>
+                                    <button type="button" class="btn btn-small btn-outline"
+                                            onclick="toggleVoidForm('void-appt-{{ $a->appointment_id }}')">Back</button>
+                                </div>
+                            </form>
+                        </td>
                     </tr>
                 @endforeach
             </table>
@@ -64,3 +89,11 @@
         </div>
     @endif
 @endsection
+@push('scripts')
+<script>
+function toggleVoidForm(id) {
+    var el = document.getElementById(id);
+    if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+</script>
+@endpush

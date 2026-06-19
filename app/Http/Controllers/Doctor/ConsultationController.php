@@ -24,7 +24,6 @@ class ConsultationController extends Controller
             'prescription.doctor.user',
         ])->findOrFail($consultationId);
 
-        // Previous prescriptions for this patient (medication history).
         $previousPrescriptions = Prescription::with(['items', 'doctor.user'])
             ->whereHas('consultation', fn ($q) => $q->where('patient_id', $consultation->patient_id))
             ->where('consultation_id', '!=', $consultationId)
@@ -36,11 +35,48 @@ class ConsultationController extends Controller
         return view('doctor.consultation', compact('consultation', 'previousPrescriptions', 'doctor'));
     }
 
+    /** Update vitals, notes, and follow-up date on a consultation. */
+    public function update(Request $request, int $consultationId)
+    {
+        $consultation = Consultation::findOrFail($consultationId);
+        $doctor       = Auth::user()->doctorProfile;
+
+        abort_unless($doctor, 403, 'Your doctor profile is missing.');
+        abort_unless($consultation->doctor_id === $doctor->doctor_id, 403, 'You cannot modify another doctor\'s consultation.');
+
+        $data = $request->validate([
+            'chief_complaint'  => ['nullable', 'string'],
+            'weight_kg'        => ['nullable', 'numeric', 'min:0', 'max:500'],
+            'height_cm'        => ['nullable', 'numeric', 'min:0', 'max:300'],
+            'temp_c'           => ['nullable', 'numeric', 'min:30', 'max:45'],
+            'bp_systolic'      => ['nullable', 'integer', 'min:50', 'max:300'],
+            'bp_diastolic'     => ['nullable', 'integer', 'min:30', 'max:200'],
+            'heart_rate'       => ['nullable', 'integer', 'min:20', 'max:300'],
+            'respiratory_rate' => ['nullable', 'integer', 'min:5', 'max:80'],
+            'clinical_notes'   => ['nullable', 'string'],
+            'follow_up_at'     => ['nullable', 'date'],
+        ]);
+
+        $old = $consultation->only([
+            'chief_complaint', 'weight_kg', 'height_cm', 'temp_c',
+            'bp_systolic', 'bp_diastolic', 'heart_rate', 'respiratory_rate',
+            'clinical_notes', 'follow_up_at',
+        ]);
+
+        $consultation->update($data);
+
+        AuditLogger::log('UPDATE', 'Consultations', 'consultations', $consultation->consultation_id,
+            'Doctor updated consultation record', $old, $data);
+
+        return back()->with('status', 'Consultation updated.');
+    }
+
     /** Add a structured diagnosis (shows in the patient's diagnosis tab). */
     public function storeDiagnosis(Request $request, int $consultationId)
     {
         $consultation = Consultation::findOrFail($consultationId);
-        $doctor = Auth::user()->doctorProfile;
+        $doctor       = Auth::user()->doctorProfile;
+
         abort_unless($doctor, 403, 'Your doctor profile is missing.');
         abort_unless($consultation->doctor_id === $doctor->doctor_id, 403, 'You cannot modify another doctor\'s consultation.');
 
@@ -59,7 +95,7 @@ class ConsultationController extends Controller
             'diagnosed_at'    => now(),
         ]);
 
-        AuditLogger::log('CREATE', 'Diagnoses', 'diagnoses', $diagnosis->diagnosis_id, 'Doctor recorded a new diagnosis (new findings)');
+        AuditLogger::log('CREATE', 'Diagnoses', 'diagnoses', $diagnosis->diagnosis_id, 'Doctor recorded a new diagnosis');
 
         return back()->with('status', 'Diagnosis added.');
     }
@@ -68,7 +104,8 @@ class ConsultationController extends Controller
     public function storePrescription(Request $request, int $consultationId)
     {
         $consultation = Consultation::findOrFail($consultationId);
-        $doctor = Auth::user()->doctorProfile;
+        $doctor       = Auth::user()->doctorProfile;
+
         abort_unless($doctor, 403, 'Your doctor profile is missing.');
         abort_unless($consultation->doctor_id === $doctor->doctor_id, 403, 'You cannot modify another doctor\'s consultation.');
 
@@ -83,7 +120,6 @@ class ConsultationController extends Controller
         ]);
 
         DB::transaction(function () use ($data, $consultation, $doctor) {
-            // One prescription per consultation; create it if it does not exist yet.
             $prescription = Prescription::firstOrCreate(
                 ['consultation_id' => $consultation->consultation_id],
                 ['prescribed_by' => $doctor->doctor_id, 'prescribed_at' => now()]
@@ -104,5 +140,28 @@ class ConsultationController extends Controller
         });
 
         return back()->with('status', 'Medicine added to the prescription.');
+    }
+
+    /** Remove a single prescription item (hard delete — items have no clinical standalone meaning). */
+    public function destroyItem(int $itemId)
+    {
+        $item   = PrescriptionItem::findOrFail($itemId);
+        $doctor = Auth::user()->doctorProfile;
+
+        abort_unless($doctor, 403, 'Your doctor profile is missing.');
+
+        $prescription = Prescription::with('consultation')->findOrFail($item->prescription_id);
+
+        abort_unless(
+            $prescription->consultation->doctor_id === $doctor->doctor_id,
+            403,
+            'You cannot modify another doctor\'s prescription.'
+        );
+
+        $item->delete();
+
+        AuditLogger::log('DELETE', 'Prescriptions', 'prescription_items', $itemId, 'Doctor removed a prescription item');
+
+        return back()->with('status', 'Medicine removed from prescription.');
     }
 }

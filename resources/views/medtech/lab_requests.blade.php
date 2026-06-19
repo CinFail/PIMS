@@ -56,7 +56,7 @@
                                     {{ $item->result ? 'Update' : 'Encode' }}
                                 </a>
 
-                                @if($item->result && $item->result->workflow_status === 'Encoded')
+                                @if($item->result && $item->result->workflow_status === 'Encoded' && !$item->result->is_voided)
                                     <form action="{{ route('medtech.lab.result.release', $item->request_item_id) }}" method="POST" class="inline-form">
                                         @csrf
                                         <button type="submit" class="btn btn-small"

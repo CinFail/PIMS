@@ -55,6 +55,14 @@
 
         <div class="form-grid-2">
             <div class="form-group">
+                <label for="appointment_type">Appointment Type</label>
+                <select name="appointment_type" id="appointment_type">
+                    <option value="Scheduled" @selected(old('appointment_type', 'Scheduled') === 'Scheduled')>Scheduled</option>
+                    <option value="Walk-in"   @selected(old('appointment_type') === 'Walk-in')>Walk-in</option>
+                    <option value="Follow-up" @selected(old('appointment_type') === 'Follow-up')>Follow-up</option>
+                </select>
+            </div>
+            <div class="form-group">
                 <label for="preferred_time">Preferred Time</label>
                 <input type="time" name="preferred_time" id="preferred_time"
                        value="{{ old('preferred_time') }}"
@@ -63,7 +71,7 @@
                     <span class="field-error">{{ $message }}</span>
                 @enderror
             </div>
-            <div class="form-group">
+            <div class="form-group span-2">
                 <label for="reason_for_visit">Reason for Visit</label>
                 <textarea name="reason_for_visit" id="reason_for_visit">{{ old('reason_for_visit') }}</textarea>
             </div>

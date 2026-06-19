@@ -40,12 +40,12 @@ class LabController extends Controller
         $medtech = Auth::user()->medTechProfile;
 
         $data = $request->validate([
-            'result_value'    => ['nullable', 'string', 'max:255'],
+            'result_value'    => ['nullable', 'required_without:result_file', 'string', 'max:255'],
             'unit'            => ['nullable', 'string', 'max:20'],
             'reference_range' => ['nullable', 'string', 'max:50'],
             'abnormal_flag'   => ['required', 'in:High,Low,Normal,Critical'],
             'remarks'         => ['nullable', 'string'],
-            'result_file'     => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
+            'result_file'     => ['nullable', 'required_without:result_value', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
         ]);
 
         $filePath = null;
@@ -92,7 +92,7 @@ class LabController extends Controller
     {
         $item = LabRequestItem::with(['request', 'result'])->findOrFail($itemId);
 
-        if (! $item->result || $item->result->workflow_status !== 'Encoded') {
+        if (! $item->result || $item->result->workflow_status !== 'Encoded' || $item->result->is_voided) {
             return back()->withErrors(['release' => 'This result cannot be released in its current state.']);
         }
 

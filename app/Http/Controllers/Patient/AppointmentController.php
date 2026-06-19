@@ -75,6 +75,7 @@ class AppointmentController extends Controller
 
         $rules = [
             'duty_session_id'  => ['required', 'integer', 'exists:doctor_duty_sessions,duty_session_id'],
+            'appointment_type' => ['nullable', 'in:Scheduled,Walk-in,Follow-up'],
             'preferred_time'   => ['nullable', 'regex:/^([01]\d|2[0-3]):[0-5]\d$/'],
             'reason_for_visit' => ['nullable', 'string'],
             'lab_tests'        => ['nullable', 'array'],
@@ -122,7 +123,7 @@ class AppointmentController extends Controller
                 'appointment_at'   => $appointmentAt,
                 'duration_minutes' => 30,
                 'reason_for_visit' => $data['reason_for_visit'] ?? null,
-                'appointment_type' => 'Scheduled',
+                'appointment_type' => $data['appointment_type'] ?? 'Scheduled',
                 'status_id'        => $scheduledStatus->appointment_status_id,
             ]);
 

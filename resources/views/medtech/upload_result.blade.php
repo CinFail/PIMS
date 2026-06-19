@@ -50,12 +50,18 @@
                 </div>
                 <div class="form-group span-2">
                     <label for="result_file">Soft Copy (PDF or image)</label>
+                    <p class="muted" style="font-size:0.85em;margin-bottom:6px;">
+                        Either a result value <strong>or</strong> a file is required. Both are accepted.
+                    </p>
                     <input type="file" name="result_file" id="result_file" accept=".pdf,.jpg,.jpeg,.png">
                     @if($item->result?->result_file_path)
-                        <span class="field-error" style="color:var(--text-muted);">
-                            Current: <a href="{{ asset('storage/'.$item->result->result_file_path) }}" target="_blank">view file</a>
+                        <span style="color:var(--text-muted);font-size:0.85em;display:block;margin-top:4px;">
+                            Current file: <a href="{{ asset('storage/'.$item->result->result_file_path) }}" target="_blank">view file</a>
+                            (leave blank to keep existing)
                         </span>
                     @endif
+                    @error('result_file') <span class="field-error">{{ $message }}</span> @enderror
+                    @error('result_value') <span class="field-error">{{ $message }}</span> @enderror
                 </div>
             </div>
         </div>

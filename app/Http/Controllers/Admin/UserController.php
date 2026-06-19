@@ -162,9 +162,18 @@ class UserController extends Controller
             ]);
         }
 
-        $new = $user->account_status === 'Active' ? 'Deactivated' : 'Active';
+        $new      = $user->account_status === 'Active' ? 'Deactivated' : 'Active';
+        $isActive = $new === 'Active' ? 1 : 0;
 
         $user->update(['account_status' => $new]);
+
+        // Keep staff profile is_active in sync with account status.
+        if ($user->doctorProfile) {
+            $user->doctorProfile->update(['is_active' => $isActive]);
+        }
+        if ($user->medTechProfile) {
+            $user->medTechProfile->update(['is_active' => $isActive]);
+        }
 
         AuditLogger::log('UPDATE', 'Access Control', 'users', $user->user_id, "Admin set account status to {$new}");
 
