@@ -23,13 +23,36 @@
     @else
         <div class="table-card">
             <table>
-                <tr><th>Date</th><th>Description</th><th>Type</th><th>ICD</th></tr>
+                <tr><th>Date</th><th>Description</th><th>Type</th><th>ICD</th><th></th></tr>
                 @foreach($consultation->diagnoses->where('is_voided', 0) as $d)
                     <tr>
                         <td>{{ $d->diagnosed_at?->format('M d, Y') }}</td>
                         <td>{{ $d->description }}</td>
                         <td>{{ $d->diagnosis_type }}</td>
                         <td>{{ $d->icd_code ?? '—' }}</td>
+                        <td class="row-actions">
+                            <button type="button" class="btn btn-small btn-outline"
+                                    onclick="toggleVoidForm('void-diag-{{ $d->diagnosis_id }}')">
+                                Request Void
+                            </button>
+                        </td>
+                    </tr>
+                    <tr id="void-diag-{{ $d->diagnosis_id }}" style="display:none;">
+                        <td colspan="5" style="padding:10px 12px;background:#fafafa;">
+                            <form action="{{ route('void.store') }}" method="POST">
+                                @csrf
+                                <input type="hidden" name="table_name" value="diagnoses">
+                                <input type="hidden" name="record_id" value="{{ $d->diagnosis_id }}">
+                                <div class="form-group" style="margin-bottom:6px;">
+                                    <textarea name="reason" placeholder="Reason for void request (min 10 characters)" style="width:100%;min-height:60px;" required minlength="10"></textarea>
+                                </div>
+                                <div style="display:flex;gap:6px;">
+                                    <button type="submit" class="btn btn-small">Submit Request</button>
+                                    <button type="button" class="btn btn-small btn-outline"
+                                            onclick="toggleVoidForm('void-diag-{{ $d->diagnosis_id }}')">Cancel</button>
+                                </div>
+                            </form>
+                        </td>
                     </tr>
                 @endforeach
             </table>
@@ -138,6 +161,15 @@
             </div>
         </form>
     </div>
+
+@push('scripts')
+<script>
+function toggleVoidForm(id) {
+    var el = document.getElementById(id);
+    if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+</script>
+@endpush
 
     {{-- Previous Prescriptions --}}
     @if($previousPrescriptions->isNotEmpty())

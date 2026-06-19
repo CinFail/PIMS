@@ -91,6 +91,43 @@
                 <input type="password" name="password_confirmation" id="password_confirmation" required>
             </div>
         </div>
+        <div class="form-group">
+            <details style="border:1px solid #d0d0d0;border-radius:6px;padding:12px 14px;background:#f9f9f9;margin-bottom:8px;">
+                <summary style="font-weight:600;cursor:pointer;list-style:none;display:flex;align-items:center;gap:6px;">
+                    <i class="bi bi-shield-lock"></i> Data Privacy Notice (RA 10173) — click to read
+                </summary>
+                <div style="margin-top:12px;font-size:0.88em;line-height:1.65;color:#444;">
+                    <p>
+                        <strong>EGBC Diagnostic and Medical Services</strong> collects and processes your personal
+                        and health information in compliance with <strong>Republic Act No. 10173</strong>,
+                        also known as the <em>Data Privacy Act of 2012</em>, and its Implementing Rules and Regulations.
+                    </p>
+                    <p><strong>What we collect:</strong> Full name, date of birth, contact details, medical history,
+                        laboratory requests and results, prescription records, and consultation notes.</p>
+                    <p><strong>Purpose:</strong> Your data is used strictly for patient registration, scheduling of
+                        medical consultations and laboratory tests, preparation and release of medical records,
+                        and communications related to your healthcare at this clinic.</p>
+                    <p><strong>Data sharing:</strong> Your information will not be disclosed to third parties without
+                        your written consent, except as required by law (e.g., mandatory reporting to the Department
+                        of Health).</p>
+                    <p><strong>Retention:</strong> Records are retained for the period required by applicable
+                        Philippine health regulations. You may request access to or correction of your records
+                        at any time by contacting the clinic administrator.</p>
+                    <p><strong>Your rights under RA 10173:</strong> You have the right to be informed, to access,
+                        to object, to erasure (in certain cases), to rectification, and to data portability.
+                        To exercise these rights, contact the clinic's Data Protection Officer.</p>
+                </div>
+            </details>
+            <label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer;margin-top:4px;">
+                <input type="checkbox" name="consent" id="consent" value="1"
+                       {{ old('consent') ? 'checked' : '' }}
+                       style="margin-top:3px;flex-shrink:0;"
+                       class="{{ $errors->has('consent') ? 'is-error' : '' }}">
+                <span>I have read and I agree to the Data Privacy Notice above. <span class="req">*</span></span>
+            </label>
+            @error('consent') <span class="field-error">You must accept the Data Privacy Notice to register.</span> @enderror
+        </div>
+
         <button type="submit" class="btn btn-full">Register</button>
     </form>
 

@@ -10,7 +10,7 @@ class LabTestCategory extends Model
     protected $table = 'lab_test_categories';
     protected $primaryKey = 'lab_category_id';
 
-    protected $fillable = ['category_name', 'description'];
+    protected $fillable = ['category_name', 'description', 'is_active'];
 
     public function tests(): HasMany
     {

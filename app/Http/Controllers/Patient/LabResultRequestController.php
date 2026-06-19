@@ -17,10 +17,14 @@ class LabResultRequestController extends Controller
     {
         $patient = $this->patient();
 
-        // Results that belong to this patient (joined through the request chain).
+        // Only Released results are visible to the patient.
         $results = LabResult::whereHas('requestItem.request', function ($q) use ($patient) {
             $q->where('patient_id', $patient->patient_id);
-        })->with('requestItem.test')->orderByDesc('created_at')->get();
+        })->where('workflow_status', 'Released')
+          ->where('is_voided', 0)
+          ->with('requestItem.test')
+          ->orderByDesc('released_at')
+          ->get();
 
         $myRequests = LabResultRequest::with('result.requestItem.test')
             ->where('patient_id', $patient->patient_id)

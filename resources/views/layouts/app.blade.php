@@ -123,7 +123,7 @@
             </a>
         @endif
 
-        @if($user->hasPermission('manage-roles') || $user->hasPermission('manage-users'))
+        @if($user->hasPermission('manage-roles') || $user->hasPermission('manage-users') || $user->hasPermission('manage-maintenance'))
             <div class="group-label">Administration</div>
             @if($user->hasPermission('manage-roles'))
                 <a href="{{ route('admin.roles.index') }}" class="{{ request()->routeIs('admin.roles.*') ? 'active' : '' }}">
@@ -133,6 +133,11 @@
             @if($user->hasPermission('manage-users'))
                 <a href="{{ route('admin.users.index') }}" class="{{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
                     <i class="bi bi-people"></i> Users
+                </a>
+            @endif
+            @if($user->hasPermission('manage-maintenance'))
+                <a href="{{ route('admin.void.index') }}" class="{{ request()->routeIs('admin.void.*') ? 'active' : '' }}">
+                    <i class="bi bi-x-octagon"></i> Void Requests
                 </a>
             @endif
         @endif
@@ -221,5 +226,51 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 @stack('scripts')
+<script>
+/* Auto logout on inactivity */
+(function () {
+    var idleMs = {{ auth()->user()->auto_logout_minutes ?? 15 }} * 60 * 1000;
+    var warnMs = idleMs - 60000;
+    var warnTimer, outTimer, banner;
+
+    function clearBanner() {
+        if (banner) { banner.remove(); banner = null; }
+    }
+
+    function reset() {
+        clearTimeout(warnTimer);
+        clearTimeout(outTimer);
+        clearBanner();
+
+        if (idleMs > 60000) {
+            warnTimer = setTimeout(function () {
+                banner = document.createElement('div');
+                banner.className = 'alert alert-error';
+                banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;border-radius:0;text-align:center;margin:0;';
+                banner.textContent = 'You will be automatically logged out in 1 minute due to inactivity.';
+                document.body.prepend(banner);
+            }, warnMs);
+        }
+
+        outTimer = setTimeout(function () {
+            var f = document.createElement('form');
+            f.method = 'POST';
+            f.action = '{{ route("logout") }}';
+            var t = document.createElement('input');
+            t.type = 'hidden'; t.name = '_token';
+            t.value = document.querySelector('meta[name="csrf-token"]').content;
+            f.appendChild(t);
+            document.body.appendChild(f);
+            f.submit();
+        }, idleMs);
+    }
+
+    ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'].forEach(function (e) {
+        document.addEventListener(e, reset, { passive: true });
+    });
+
+    reset();
+})();
+</script>
 </body>
 </html>

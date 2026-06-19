@@ -33,10 +33,10 @@ class LabController extends Controller
         return view('medtech.upload_result', compact('item'));
     }
 
-    /** Save the result and optional uploaded soft-copy file. */
+    /** Save the result. Sets workflow_status = Encoded — admin/medtech must release separately. */
     public function storeResult(Request $request, int $itemId)
     {
-        $item = LabRequestItem::with('request')->findOrFail($itemId);
+        $item    = LabRequestItem::with('request')->findOrFail($itemId);
         $medtech = Auth::user()->medTechProfile;
 
         $data = $request->validate([
@@ -50,7 +50,6 @@ class LabController extends Controller
 
         $filePath = null;
         if ($request->hasFile('result_file')) {
-            // Stored under storage/app/public/lab_results (run: php artisan storage:link)
             $filePath = $request->file('result_file')->store('lab_results', 'public');
         }
 
@@ -63,29 +62,55 @@ class LabController extends Controller
                     'reference_range'  => $data['reference_range'] ?? null,
                     'abnormal_flag'    => $data['abnormal_flag'],
                     'remarks'          => $data['remarks'] ?? null,
-                    'workflow_status'  => 'Released',
+                    'workflow_status'  => 'Encoded',
                     'result_file_path' => $filePath,
                     'performed_by'     => $medtech?->medtech_id,
-                    'released_by'      => Auth::id(),
                     'result_at'        => now(),
-                    'released_at'      => now(),
+                    'released_by'      => null,
+                    'released_at'      => null,
                 ]
             );
 
+            $item->update(['status' => 'Processing']);
+            $item->request->update(['status' => 'Processing']);
+        });
+
+        AuditLogger::log('UPLOAD', 'Laboratory', 'lab_results', $item->request_item_id,
+            'MedTech encoded a laboratory test result — awaiting release');
+
+        return redirect()->route('medtech.lab.index')->with('status', 'Result encoded. Use the Release button to make it visible to the patient.');
+    }
+
+    /** Release an Encoded result — patient can view it after this. */
+    public function releaseResult(int $itemId)
+    {
+        $item = LabRequestItem::with(['request', 'result'])->findOrFail($itemId);
+
+        if (! $item->result || $item->result->workflow_status !== 'Encoded') {
+            return back()->withErrors(['release' => 'This result cannot be released in its current state.']);
+        }
+
+        DB::transaction(function () use ($item) {
+            $item->result->update([
+                'workflow_status' => 'Released',
+                'released_by'     => Auth::id(),
+                'released_at'     => now(),
+            ]);
+
             $item->update(['status' => 'Completed']);
 
-            // If all items are completed, mark the whole request completed.
             $remaining = LabRequestItem::where('lab_request_id', $item->lab_request_id)
-                ->where('status', '!=', 'Completed')->count();
+                ->where('status', '!=', 'Completed')
+                ->count();
+
             if ($remaining === 0) {
                 $item->request->update(['status' => 'Completed']);
-            } else {
-                $item->request->update(['status' => 'Processing']);
             }
         });
 
-        AuditLogger::log('UPLOAD', 'Laboratory', 'lab_results', $item->request_item_id, 'MedTech uploaded a laboratory test result');
+        AuditLogger::log('UPDATE', 'Laboratory', 'lab_results', $item->result->result_id,
+            'MedTech released a laboratory result — now visible to patient');
 
-        return redirect()->route('medtech.lab.index')->with('status', 'Result saved successfully.');
+        return redirect()->route('medtech.lab.index')->with('status', 'Result released. Patient can now view it.');
     }
 }

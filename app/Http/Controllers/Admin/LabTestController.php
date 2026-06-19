@@ -10,10 +10,13 @@ use Illuminate\Http\Request;
 
 class LabTestController extends Controller
 {
-    /** List all lab tests. */
+    /** List active lab tests. */
     public function index()
     {
-        $tests = LabTest::with('category')->orderBy('test_name')->paginate(15);
+        $tests = LabTest::with('category')
+            ->where('is_active', 1)
+            ->orderBy('test_name')
+            ->paginate(15);
 
         return view('admin.lab_tests.index', compact('tests'));
     }
@@ -21,7 +24,7 @@ class LabTestController extends Controller
     /** Show the create form. */
     public function create()
     {
-        $categories = LabTestCategory::orderBy('category_name')->get();
+        $categories = LabTestCategory::where('is_active', 1)->orderBy('category_name')->get();
 
         return view('admin.lab_tests.create', compact('categories'));
     }
@@ -41,8 +44,8 @@ class LabTestController extends Controller
     /** Show the edit form. */
     public function edit(int $id)
     {
-        $test = LabTest::findOrFail($id);
-        $categories = LabTestCategory::orderBy('category_name')->get();
+        $test       = LabTest::findOrFail($id);
+        $categories = LabTestCategory::where('is_active', 1)->orderBy('category_name')->get();
 
         return view('admin.lab_tests.edit', compact('test', 'categories'));
     }
@@ -60,18 +63,17 @@ class LabTestController extends Controller
         return redirect()->route('admin.lab-tests.index')->with('status', 'Lab test updated.');
     }
 
-    /** Delete a lab test. */
+    /** Soft-delete: set is_active = 0. */
     public function destroy(int $id)
     {
         $test = LabTest::findOrFail($id);
-        $test->delete();
+        $test->update(['is_active' => 0]);
 
-        AuditLogger::log('DELETE', 'Maintenance', 'lab_tests', $id, 'Deleted lab test');
+        AuditLogger::log('DELETE', 'Maintenance', 'lab_tests', $id, 'Deactivated lab test');
 
-        return redirect()->route('admin.lab-tests.index')->with('status', 'Lab test deleted.');
+        return redirect()->route('admin.lab-tests.index')->with('status', 'Lab test deactivated.');
     }
 
-    /** Shared validation rules for create + update. */
     private function validateData(Request $request): array
     {
         $validated = $request->validate([

@@ -28,6 +28,8 @@ class User extends Authenticatable
         'has_accepted_privacy_notice',
         'consented_privacy_at',
         'email_verified_at',
+        'failed_login_attempts',
+        'locked_until',
     ];
 
     protected $hidden = [
@@ -43,6 +45,8 @@ class User extends Authenticatable
             'consented_privacy_at' => 'datetime',
             'is_otp_bypassed' => 'boolean',
             'has_accepted_privacy_notice' => 'boolean',
+            'locked_until' => 'datetime',
+            'failed_login_attempts' => 'integer',
         ];
     }
 

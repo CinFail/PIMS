@@ -32,6 +32,7 @@ class RegisterController extends Controller
             'mobile_number' => ['nullable', new MobileNumber],
             'date_of_birth' => ['required', 'date', 'before_or_equal:today'],
             'password'      => ['required', 'string', 'min:6', 'confirmed'],
+            'consent'       => ['required', 'accepted'],
         ]);
 
         // Use a transaction so the user + profile + role are all saved together.

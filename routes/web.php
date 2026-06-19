@@ -32,6 +32,7 @@ use App\Http\Controllers\Admin\LabCategoryController;
 use App\Http\Controllers\Admin\LabTestController;
 use App\Http\Controllers\Admin\AuditLogController;
 use App\Http\Controllers\Admin\DoctorScheduleController;
+use App\Http\Controllers\Admin\VoidRequestController;
 
 /*
  | Route parameter names match controller method argument names so Laravel
@@ -123,7 +124,11 @@ Route::middleware('auth')->group(function () {
     Route::middleware(['role:med_tech', 'permission:release-lab-result'])->prefix('medtech')->name('medtech.')->group(function () {
         Route::get('soft-copy', [SoftCopyController::class, 'index'])->name('softcopy.index');
         Route::post('soft-copy/{requestId}/fulfill', [SoftCopyController::class, 'fulfill'])->name('softcopy.fulfill');
+        Route::post('lab/items/{itemId}/release', [LabController::class, 'releaseResult'])->name('lab.result.release');
     });
+
+    // Void requests — submission open to any authenticated user (doctor, medtech, etc.)
+    Route::post('void-request', [VoidRequestController::class, 'store'])->name('void.store');
 
     // Receptionist — patient list + add (receptionist role + permission)
     Route::middleware(['role:receptionist', 'permission:manage-patients'])->prefix('receptionist')->name('receptionist.')->group(function () {
@@ -156,6 +161,13 @@ Route::middleware('auth')->group(function () {
         Route::get('users/new', [UserController::class, 'create'])->name('users.create');
         Route::post('users', [UserController::class, 'store'])->name('users.store');
         Route::post('users/{userId}/toggle', [UserController::class, 'toggleStatus'])->name('users.toggle');
+    });
+
+    // Void request queue — admin approval
+    Route::middleware('permission:manage-maintenance')->prefix('admin')->name('admin.')->group(function () {
+        Route::get('void-requests', [VoidRequestController::class, 'index'])->name('void.index');
+        Route::post('void-requests/{id}/approve', [VoidRequestController::class, 'approve'])->name('void.approve');
+        Route::post('void-requests/{id}/reject', [VoidRequestController::class, 'reject'])->name('void.reject');
     });
 
     // Maintenance — cross-role
