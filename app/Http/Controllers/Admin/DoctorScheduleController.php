@@ -120,10 +120,14 @@ class DoctorScheduleController extends Controller
         $voided = $session->appointments()->where('is_voided', 0)->update([
             'is_voided'   => 1,
             'void_at'     => now(),
-            'void_reason' => 'Doctor duty session deleted by admin',
+            'void_reason' => 'Doctor duty session cancelled by admin',
         ]);
 
-        $session->delete();
+        $session->update([
+            'is_voided'   => 1,
+            'void_at'     => now(),
+            'void_reason' => 'Deleted by admin',
+        ]);
 
         AuditLogger::log(
             'DELETE', 'Doctor', 'doctor_duty_sessions', $id,

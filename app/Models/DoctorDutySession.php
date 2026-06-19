@@ -14,6 +14,7 @@ class DoctorDutySession extends Model
     protected $fillable = [
         'doctor_id', 'duty_date', 'start_time', 'end_time',
         'status', 'assigned_by',
+        'is_voided', 'void_at', 'void_reason', 'void_approved_by',
     ];
 
     protected $casts = [

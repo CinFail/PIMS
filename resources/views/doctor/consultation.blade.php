@@ -59,6 +59,7 @@
         </div>
     @endif
 
+    @if($doctor)
     <div class="form-card">
         <div class="form-section-title">Add Diagnosis</div>
         <form action="{{ route('doctor.consultation.diagnosis', $consultation->consultation_id) }}" method="POST">
@@ -87,10 +88,11 @@
             </div>
         </form>
     </div>
+    @endif
 
     {{-- Prescription --}}
     <h2>Prescription</h2>
-    @if($consultation->prescription && $consultation->prescription->items->count())
+    @if($consultation->prescription && !$consultation->prescription->is_voided && $consultation->prescription->items->count())
         <div class="table-card">
             <table>
                 <tr><th>Medicine</th><th>Dosage</th><th>Form</th><th>Frequency</th><th>Duration</th><th>Qty</th></tr>
@@ -110,14 +112,13 @@
         <p class="muted">No medicines prescribed yet.</p>
     @endif
 
+    @if($doctor)
     <div class="form-card">
         <div class="form-section-title">Add Medicine</div>
-        @if($doctor)
-            <div class="form-info">
-                <i class="bi bi-person-badge"></i>
-                Dr. {{ $doctor->user?->fullName() }} &bull; License: {{ $doctor->license_number ?? 'N/A' }}
-            </div>
-        @endif
+        <div class="form-info">
+            <i class="bi bi-person-badge"></i>
+            Dr. {{ $doctor->user?->fullName() }} &bull; License: {{ $doctor->license_number ?? 'N/A' }}
+        </div>
         <form action="{{ route('doctor.consultation.prescription', $consultation->consultation_id) }}" method="POST">
             @csrf
             <div class="form-grid-2">
@@ -161,6 +162,7 @@
             </div>
         </form>
     </div>
+    @endif
 
 @push('scripts')
 <script>
