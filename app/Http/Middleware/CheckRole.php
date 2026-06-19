@@ -31,6 +31,15 @@ class CheckRole
             }
         }
 
+        // If the route also carries permission: middleware and the user holds
+        // that permission, let them through regardless of role.
+        foreach ($request->route()->middleware() as $m) {
+            if (str_starts_with($m, 'permission:') &&
+                $user->hasPermission(substr($m, strlen('permission:')))) {
+                return $next($request);
+            }
+        }
+
         abort(403, 'You do not have access to this page.');
     }
 }
