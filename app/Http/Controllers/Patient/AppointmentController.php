@@ -31,7 +31,6 @@ class AppointmentController extends Controller
 
         $labAppointments = LabAppointment::with('labRequest.items.test')
             ->where('patient_id', $patient->patient_id)
-            ->where('is_voided', 0)
             ->orderByDesc('scheduled_at')
             ->get();
 

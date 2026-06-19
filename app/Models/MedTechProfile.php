@@ -10,7 +10,7 @@ class MedTechProfile extends Model
     protected $table = 'med_tech_profiles';
     protected $primaryKey = 'medtech_id';
 
-    protected $fillable = ['user_id', 'license_number'];
+    protected $fillable = ['user_id', 'license_number', 'is_active'];
 
     public function user(): BelongsTo
     {

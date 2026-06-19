@@ -54,21 +54,27 @@ class LabController extends Controller
         }
 
         DB::transaction(function () use ($data, $item, $medtech, $filePath) {
+            $resultData = [
+                'result_value'    => $data['result_value'] ?? null,
+                'unit'            => $data['unit'] ?? null,
+                'reference_range' => $data['reference_range'] ?? null,
+                'abnormal_flag'   => $data['abnormal_flag'],
+                'remarks'         => $data['remarks'] ?? null,
+                'workflow_status' => 'Encoded',
+                'performed_by'    => $medtech?->medtech_id,
+                'result_at'       => now(),
+                'released_by'     => null,
+                'released_at'     => null,
+            ];
+
+            // Only overwrite the stored file if a new one was actually uploaded.
+            if ($filePath !== null) {
+                $resultData['result_file_path'] = $filePath;
+            }
+
             LabResult::updateOrCreate(
                 ['request_item_id' => $item->request_item_id],
-                [
-                    'result_value'     => $data['result_value'] ?? null,
-                    'unit'             => $data['unit'] ?? null,
-                    'reference_range'  => $data['reference_range'] ?? null,
-                    'abnormal_flag'    => $data['abnormal_flag'],
-                    'remarks'          => $data['remarks'] ?? null,
-                    'workflow_status'  => 'Encoded',
-                    'result_file_path' => $filePath,
-                    'performed_by'     => $medtech?->medtech_id,
-                    'result_at'        => now(),
-                    'released_by'      => null,
-                    'released_at'      => null,
-                ]
+                $resultData
             );
 
             $item->update(['status' => 'Processing']);

@@ -66,7 +66,7 @@
                                     </form>
                                 @endif
 
-                                @if($item->result && $item->result->workflow_status !== 'Released' && !$item->result->is_voided)
+                                @if($item->result && !$item->result->is_voided)
                                     <button type="button" class="btn btn-small btn-outline"
                                             onclick="toggleVoidForm('void-result-{{ $item->result->result_id }}')">
                                         Request Void

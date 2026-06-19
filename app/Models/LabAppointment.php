@@ -12,7 +12,6 @@ class LabAppointment extends Model
 
     protected $fillable = [
         'patient_id', 'lab_request_id', 'scheduled_at', 'status', 'notes',
-        'is_voided', 'void_at', 'void_reason', 'void_approved_by',
     ];
 
     protected $casts = ['scheduled_at' => 'datetime'];

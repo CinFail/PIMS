@@ -35,6 +35,11 @@ class VoidRequestController extends Controller
     /** Doctor or MedTech submits a void request. */
     public function store(Request $request)
     {
+        $user = Auth::user();
+        if (! $user->doctorProfile && ! $user->medTechProfile && ! $user->hasRole('super_admin')) {
+            abort(403, 'Only doctors, medical technologists, and administrators can submit void requests.');
+        }
+
         $data = $request->validate([
             'table_name' => ['required', 'string', 'in:' . implode(',', array_keys(self::VOIDABLE))],
             'record_id'  => ['required', 'integer', 'min:1'],
