@@ -4,12 +4,12 @@
     <h1>Edit Lab Category</h1>
 
     <div class="btn-row">
-        <a href="{{ route('admin.lab-categories.index') }}" class="btn btn-outline">
+        <a href="{{ route('lab-categories.index') }}" class="btn btn-outline">
             <i class="bi bi-arrow-left"></i> Back
         </a>
     </div>
 
-    <form action="{{ route('admin.lab-categories.update', $category->lab_category_id) }}" method="POST">
+    <form action="{{ route('lab-categories.update', $category->lab_category_id) }}" method="POST">
         @csrf @method('PUT')
         <div class="form-group">
             <label for="category_name">Category Name</label>

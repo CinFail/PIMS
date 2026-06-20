@@ -5,7 +5,7 @@
     <p class="page-subtitle">Maintenance: reusable laboratory test definitions.</p>
 
     <div class="btn-row">
-        <a href="{{ route('admin.lab-tests.create') }}" class="btn">
+        <a href="{{ route('lab-tests.create') }}" class="btn">
             <i class="bi bi-plus-lg"></i> Add Lab Test
         </a>
     </div>
@@ -25,8 +25,8 @@
                         </span>
                     </td>
                     <td class="row-actions">
-                        <a href="{{ route('admin.lab-tests.edit', $t->lab_test_id) }}" class="btn btn-small">Edit</a>
-                        <form action="{{ route('admin.lab-tests.toggle', $t->lab_test_id) }}" method="POST" class="inline-form">
+                        <a href="{{ route('lab-tests.edit', $t->lab_test_id) }}" class="btn btn-small">Edit</a>
+                        <form action="{{ route('lab-tests.toggle', $t->lab_test_id) }}" method="POST" class="inline-form">
                             @csrf @method('PATCH')
                             <button type="submit" class="btn btn-small btn-outline">
                                 {{ $t->is_active ? 'Deactivate' : 'Reactivate' }}
