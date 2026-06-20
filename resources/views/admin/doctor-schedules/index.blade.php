@@ -5,7 +5,7 @@
     <p class="page-subtitle">View and manage all doctor duty sessions.</p>
 
     <div class="btn-row">
-        <a href="{{ route('admin.doctor-schedules.create') }}" class="btn">
+        <a href="{{ route('doctor-schedules.create') }}" class="btn">
             <i class="bi bi-plus-lg"></i> Add Schedule
         </a>
     </div>
@@ -39,9 +39,9 @@
                     </td>
                     <td class="row-actions">
                         @if(! $s->is_voided)
-                            <a href="{{ route('admin.doctor-schedules.edit', $s->duty_session_id) }}" class="btn btn-small">Edit</a>
+                            <a href="{{ route('doctor-schedules.edit', $s->duty_session_id) }}" class="btn btn-small">Edit</a>
                         @endif
-                        <form action="{{ route('admin.doctor-schedules.toggle', $s->duty_session_id) }}"
+                        <form action="{{ route('doctor-schedules.toggle', $s->duty_session_id) }}"
                               method="POST" class="inline-form">
                             @csrf @method('PATCH')
                             <button type="submit" class="btn btn-small btn-outline">
