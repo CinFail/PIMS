@@ -13,7 +13,6 @@ class LabTestController extends Controller
     public function index()
     {
         $tests = LabTest::with('category')
-            ->where('is_active', 1)
             ->orderBy('test_name')
             ->paginate(15);
 
@@ -56,6 +55,20 @@ class LabTestController extends Controller
         AuditLogger::log('UPDATE', 'Maintenance', 'lab_tests', $test->lab_test_id, 'Updated lab test');
 
         return redirect()->route('admin.lab-tests.index')->with('status', 'Lab test updated.');
+    }
+
+    public function toggleActive(int $id)
+    {
+        $test      = LabTest::findOrFail($id);
+        $newActive = ! $test->is_active;
+        $test->update(['is_active' => $newActive]);
+
+        $label = $newActive ? 'Active' : 'Inactive';
+
+        AuditLogger::log('UPDATE', 'Maintenance', 'lab_tests', $test->lab_test_id,
+            "Admin set lab test status to {$label}");
+
+        return back()->with('status', "Lab test is now {$label}.");
     }
 
     public function destroy(int $id)

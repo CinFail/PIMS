@@ -14,7 +14,6 @@ class DoctorScheduleController extends Controller
     public function index()
     {
         $sessions = DoctorDutySession::with('doctor.user')
-            ->where('is_voided', 0)
             ->orderByDesc('duty_date')
             ->orderBy('start_time')
             ->paginate(20)
@@ -105,6 +104,28 @@ class DoctorScheduleController extends Controller
 
         return redirect()->route('admin.doctor-schedules.index')
             ->with('status', 'Duty session updated successfully.');
+    }
+
+    public function toggleActive(int $id)
+    {
+        $session   = DoctorDutySession::findOrFail($id);
+        $newVoided = ! $session->is_voided;
+
+        $updateData = ['is_voided' => $newVoided];
+
+        if (! $newVoided) {
+            $updateData['void_reason'] = null;
+            $updateData['void_at']     = null;
+        }
+
+        $session->update($updateData);
+
+        $label = $newVoided ? 'Inactive' : 'Active';
+
+        AuditLogger::log('UPDATE', 'Doctor', 'doctor_duty_sessions', $session->duty_session_id,
+            "Admin set duty session status to {$label}");
+
+        return back()->with('status', "Duty session is now {$label}.");
     }
 
     public function destroy(int $id)

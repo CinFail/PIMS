@@ -12,17 +12,24 @@
 
     <div class="table-card">
         <table>
-            <tr><th>Name</th><th>Description</th><th>Tests</th><th></th></tr>
+            <tr><th>Name</th><th>Description</th><th>Tests</th><th>Status</th><th></th></tr>
             @foreach($categories as $c)
                 <tr>
                     <td>{{ $c->category_name }}</td>
                     <td>{{ $c->description ?? '—' }}</td>
                     <td>{{ $c->tests_count }}</td>
+                    <td>
+                        <span class="tag {{ $c->is_active ? 'tag-green' : 'tag-red' }}">
+                            {{ $c->is_active ? 'Active' : 'Inactive' }}
+                        </span>
+                    </td>
                     <td class="row-actions">
                         <a href="{{ route('admin.lab-categories.edit', $c->lab_category_id) }}" class="btn btn-small">Edit</a>
-                        <form action="{{ route('admin.lab-categories.destroy', $c->lab_category_id) }}" method="POST" class="inline-form" onsubmit="return confirm('Delete this category?');">
-                            @csrf @method('DELETE')
-                            <button type="submit" class="btn btn-small btn-outline">Delete</button>
+                        <form action="{{ route('admin.lab-categories.toggle', $c->lab_category_id) }}" method="POST" class="inline-form">
+                            @csrf @method('PATCH')
+                            <button type="submit" class="btn btn-small btn-outline">
+                                {{ $c->is_active ? 'Deactivate' : 'Reactivate' }}
+                            </button>
                         </form>
                     </td>
                 </tr>
