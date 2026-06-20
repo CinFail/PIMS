@@ -5,7 +5,7 @@
     <p class="page-subtitle">Maintenance: groupings for laboratory tests.</p>
 
     <div class="btn-row">
-        <a href="{{ route('lab-categories.create') }}" class="btn">
+        <a href="{{ route('admin.lab-categories.create') }}" class="btn">
             <i class="bi bi-plus-lg"></i> Add Category
         </a>
     </div>
@@ -24,8 +24,8 @@
                         </span>
                     </td>
                     <td class="row-actions">
-                        <a href="{{ route('lab-categories.edit', $c->lab_category_id) }}" class="btn btn-small">Edit</a>
-                        <form action="{{ route('lab-categories.toggle', $c->lab_category_id) }}" method="POST" class="inline-form">
+                        <a href="{{ route('admin.lab-categories.edit', $c->lab_category_id) }}" class="btn btn-small">Edit</a>
+                        <form action="{{ route('admin.lab-categories.toggle', $c->lab_category_id) }}" method="POST" class="inline-form">
                             @csrf @method('PATCH')
                             <button type="submit" class="btn btn-small btn-outline">
                                 {{ $c->is_active ? 'Deactivate' : 'Reactivate' }}
