@@ -161,12 +161,9 @@ class UserController extends Controller
 
         $user->update(['account_status' => $new]);
 
-        // sync profile is_active so availability queries don't show deactivated staff
+        // sync doctor is_active so deactivated doctors hide from appointment slot picker
         if ($user->doctorProfile) {
             $user->doctorProfile->update(['is_active' => $isActive]);
-        }
-        if ($user->medTechProfile) {
-            $user->medTechProfile->update(['is_active' => $isActive]);
         }
 
         AuditLogger::log('UPDATE', 'Access Control', 'users', $user->user_id, "Admin set account status to {$new}");
