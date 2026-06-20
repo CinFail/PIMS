@@ -12,7 +12,6 @@ class LabCategoryController extends Controller
     public function index()
     {
         $categories = LabTestCategory::withCount(['tests' => fn ($q) => $q->where('is_active', 1)])
-            ->where('is_active', 1)
             ->orderBy('category_name')
             ->get();
 
@@ -59,6 +58,27 @@ class LabCategoryController extends Controller
         AuditLogger::log('UPDATE', 'Maintenance', 'lab_test_categories', $category->lab_category_id, 'Updated lab test category');
 
         return redirect()->route('admin.lab-categories.index')->with('status', 'Category updated.');
+    }
+
+    public function toggleActive(int $id)
+    {
+        $category = LabTestCategory::withCount(['tests' => fn ($q) => $q->where('is_active', 1)])->findOrFail($id);
+
+        if ($category->is_active && $category->tests_count > 0) {
+            return back()->withErrors([
+                'toggle' => "Cannot deactivate: this category still has {$category->tests_count} active lab test(s). Deactivate the tests first.",
+            ]);
+        }
+
+        $newActive = ! $category->is_active;
+        $category->update(['is_active' => $newActive]);
+
+        $label = $newActive ? 'Active' : 'Inactive';
+
+        AuditLogger::log('UPDATE', 'Maintenance', 'lab_test_categories', $category->lab_category_id,
+            "Admin set category status to {$label}");
+
+        return back()->with('status', "Category is now {$label}.");
     }
 
     public function destroy(int $id)

@@ -33,6 +33,9 @@ class DoctorDutySession extends Model
 
     public function isTaken(): bool
     {
-        return $this->appointments()->where('is_voided', 0)->exists();
+        return $this->appointments()
+            ->where('is_voided', 0)
+            ->whereNotIn('status_id', [4, 5, 6, 7])
+            ->exists();
     }
 }

@@ -9,6 +9,7 @@ use App\Models\Diagnosis;
 use App\Models\LabResult;
 use App\Models\PatientProfile;
 use App\Models\Prescription;
+use App\Models\VoidRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -37,6 +38,12 @@ class PatientChartController extends Controller
     {
         $patient = PatientProfile::with(['user', 'medicalHistory'])->findOrFail($patientId);
 
+        $consultations = Consultation::with('doctor.user')
+            ->where('patient_id', $patientId)
+            ->where('is_voided', 0)
+            ->orderByDesc('consultation_at')
+            ->get();
+
         $diagnoses = Diagnosis::with('doctor.user')
             ->whereHas('consultation', fn ($q) => $q->where('patient_id', $patientId))
             ->where('is_voided', 0)
@@ -50,9 +57,15 @@ class PatientChartController extends Controller
         $results = LabResult::whereHas('requestItem.request', fn ($q) => $q->where('patient_id', $patientId))
             ->with('requestItem.test')->orderByDesc('created_at')->get();
 
+        // Keyed by "table:id" for O(1) lookup in the view — only Pending requests matter here.
+        $pendingVoids = VoidRequest::where('status', 'Pending')
+            ->whereIn('table_name', ['consultations', 'diagnoses', 'prescriptions'])
+            ->get()
+            ->keyBy(fn ($vr) => $vr->table_name . ':' . $vr->record_id);
+
         AuditLogger::log('VIEW', 'Doctor', 'patient_profiles', $patientId, "Doctor viewed patient chart for {$patient->user->fullName()}");
 
-        return view('doctor.chart', compact('patient', 'diagnoses', 'prescriptions', 'results'));
+        return view('doctor.chart', compact('patient', 'consultations', 'diagnoses', 'prescriptions', 'results', 'pendingVoids'));
     }
 
     public function startConsultation(int $patientId)

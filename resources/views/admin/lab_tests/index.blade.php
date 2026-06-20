@@ -19,12 +19,18 @@
                     <td>{{ $t->category?->category_name }}</td>
                     <td>{{ $t->default_unit ?? '—' }}</td>
                     <td>{{ $t->default_reference_range ?? '—' }}</td>
-                    <td>{{ $t->is_active ? 'Yes' : 'No' }}</td>
+                    <td>
+                        <span class="tag {{ $t->is_active ? 'tag-green' : 'tag-red' }}">
+                            {{ $t->is_active ? 'Active' : 'Inactive' }}
+                        </span>
+                    </td>
                     <td class="row-actions">
                         <a href="{{ route('admin.lab-tests.edit', $t->lab_test_id) }}" class="btn btn-small">Edit</a>
-                        <form action="{{ route('admin.lab-tests.destroy', $t->lab_test_id) }}" method="POST" class="inline-form" onsubmit="return confirm('Delete this test?');">
-                            @csrf @method('DELETE')
-                            <button type="submit" class="btn btn-small btn-outline">Delete</button>
+                        <form action="{{ route('admin.lab-tests.toggle', $t->lab_test_id) }}" method="POST" class="inline-form">
+                            @csrf @method('PATCH')
+                            <button type="submit" class="btn btn-small btn-outline">
+                                {{ $t->is_active ? 'Deactivate' : 'Reactivate' }}
+                            </button>
                         </form>
                     </td>
                 </tr>

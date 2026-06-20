@@ -37,10 +37,14 @@ class ConsultationController extends Controller
     public function update(Request $request, int $consultationId)
     {
         $consultation = Consultation::findOrFail($consultationId);
-        $doctor       = Auth::user()->doctorProfile;
+        $user         = Auth::user();
+        $doctor       = $user->doctorProfile;
+        $isAdmin      = $user->hasRole('super_admin');
 
-        abort_unless($doctor, 403, 'Your doctor profile is missing.');
-        abort_unless($consultation->doctor_id === $doctor->doctor_id, 403, 'You cannot modify another doctor\'s consultation.');
+        abort_unless(
+            $isAdmin || ($doctor && $consultation->doctor_id === $doctor->doctor_id),
+            403, 'You cannot modify this consultation.'
+        );
 
         $data = $request->validate([
             'chief_complaint'  => ['nullable', 'string'],
@@ -138,7 +142,90 @@ class ConsultationController extends Controller
         return back()->with('status', 'Medicine added to the prescription.');
     }
 
-    // hard delete — prescription_items has no is_voided column and items have no standalone clinical record
+    public function updateDiagnosis(Request $request, int $diagnosisId)
+    {
+        $diagnosis = Diagnosis::findOrFail($diagnosisId);
+        $user      = Auth::user();
+        $doctor    = $user->doctorProfile;
+        $isAdmin   = $user->hasRole('super_admin');
+
+        abort_unless(
+            $isAdmin || ($doctor && $diagnosis->diagnosed_by === $doctor->doctor_id),
+            403, 'You cannot modify this diagnosis.'
+        );
+
+        $data = $request->validate([
+            'icd_code'       => ['nullable', 'string', 'max:20'],
+            'description'    => ['required', 'string'],
+            'diagnosis_type' => ['required', 'in:Primary,Secondary,Differential'],
+        ]);
+
+        $old = $diagnosis->only(['icd_code', 'description', 'diagnosis_type']);
+        $diagnosis->update($data);
+
+        AuditLogger::log('UPDATE', 'Diagnoses', 'diagnoses', $diagnosis->diagnosis_id,
+            'Updated diagnosis record', $old, $data);
+
+        return back()->with('status', 'Diagnosis updated.');
+    }
+
+    public function updatePrescription(Request $request, int $prescriptionId)
+    {
+        $prescription = Prescription::findOrFail($prescriptionId);
+        $user         = Auth::user();
+        $doctor       = $user->doctorProfile;
+        $isAdmin      = $user->hasRole('super_admin');
+
+        abort_unless(
+            $isAdmin || ($doctor && $prescription->prescribed_by === $doctor->doctor_id),
+            403, 'You cannot modify this prescription.'
+        );
+
+        $data = $request->validate([
+            'remarks'       => ['nullable', 'string'],
+            'validity_days' => ['nullable', 'integer', 'min:1', 'max:365'],
+        ]);
+
+        $old = $prescription->only(['remarks', 'validity_days']);
+        $prescription->update($data);
+
+        AuditLogger::log('UPDATE', 'Prescriptions', 'prescriptions', $prescription->prescription_id,
+            'Updated prescription record', $old, $data);
+
+        return back()->with('status', 'Prescription updated.');
+    }
+
+    public function updatePrescriptionItem(Request $request, int $itemId)
+    {
+        $item         = PrescriptionItem::findOrFail($itemId);
+        $user         = Auth::user();
+        $doctor       = $user->doctorProfile;
+        $isAdmin      = $user->hasRole('super_admin');
+        $prescription = Prescription::findOrFail($item->prescription_id);
+
+        abort_unless(
+            $isAdmin || ($doctor && $prescription->prescribed_by === $doctor->doctor_id),
+            403, 'You cannot modify this prescription.'
+        );
+
+        $data = $request->validate([
+            'dosage'       => ['nullable', 'string', 'max:50'],
+            'form'         => ['nullable', 'string', 'max:50'],
+            'frequency'    => ['nullable', 'string', 'max:50'],
+            'duration'     => ['nullable', 'string', 'max:50'],
+            'quantity'     => ['nullable', 'integer', 'min:1', 'max:9999'],
+            'instructions' => ['nullable', 'string'],
+        ]);
+
+        $old = $item->only(['dosage', 'form', 'frequency', 'duration', 'quantity', 'instructions']);
+        $item->update($data);
+
+        AuditLogger::log('UPDATE', 'Prescriptions', 'prescription_items', $item->prescription_item_id,
+            'Updated prescription item', $old, $data);
+
+        return back()->with('status', 'Prescription item updated.');
+    }
+
     public function destroyItem(int $itemId)
     {
         $item   = PrescriptionItem::findOrFail($itemId);
