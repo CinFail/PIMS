@@ -14,7 +14,6 @@ use Illuminate\Support\Facades\Auth;
 
 class PatientChartController extends Controller
 {
-    /** Patient records: the database of all patients (searchable). */
     public function index(Request $request)
     {
         $search = $request->query('q');
@@ -34,7 +33,6 @@ class PatientChartController extends Controller
         return view('doctor.patients', compact('patients', 'search'));
     }
 
-    /** The patient digital chart. */
     public function show(int $patientId)
     {
         $patient = PatientProfile::with(['user', 'medicalHistory'])->findOrFail($patientId);
@@ -57,7 +55,6 @@ class PatientChartController extends Controller
         return view('doctor.chart', compact('patient', 'diagnoses', 'prescriptions', 'results'));
     }
 
-    /** Start a new consultation for this patient (walk-in friendly). */
     public function startConsultation(int $patientId)
     {
         $doctor = Auth::user()->doctorProfile;

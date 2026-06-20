@@ -10,7 +10,6 @@ use Illuminate\Http\Request;
 
 class LabTestController extends Controller
 {
-    /** List active lab tests. */
     public function index()
     {
         $tests = LabTest::with('category')
@@ -21,7 +20,6 @@ class LabTestController extends Controller
         return view('admin.lab_tests.index', compact('tests'));
     }
 
-    /** Show the create form. */
     public function create()
     {
         $categories = LabTestCategory::where('is_active', 1)->orderBy('category_name')->get();
@@ -29,7 +27,6 @@ class LabTestController extends Controller
         return view('admin.lab_tests.create', compact('categories'));
     }
 
-    /** Save a new lab test. */
     public function store(Request $request)
     {
         $data = $this->validateData($request);
@@ -41,7 +38,6 @@ class LabTestController extends Controller
         return redirect()->route('admin.lab-tests.index')->with('status', 'Lab test created.');
     }
 
-    /** Show the edit form. */
     public function edit(int $id)
     {
         $test       = LabTest::findOrFail($id);
@@ -50,7 +46,6 @@ class LabTestController extends Controller
         return view('admin.lab_tests.edit', compact('test', 'categories'));
     }
 
-    /** Save edits. */
     public function update(Request $request, int $id)
     {
         $test = LabTest::findOrFail($id);
@@ -63,7 +58,6 @@ class LabTestController extends Controller
         return redirect()->route('admin.lab-tests.index')->with('status', 'Lab test updated.');
     }
 
-    /** Soft-delete: set is_active = 0. */
     public function destroy(int $id)
     {
         $test = LabTest::findOrFail($id);

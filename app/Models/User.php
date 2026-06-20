@@ -9,11 +9,10 @@ use Illuminate\Support\Facades\DB;
 
 class User extends Authenticatable
 {
-    // The provided schema uses "users" with PK "user_id".
     protected $table = 'users';
     protected $primaryKey = 'user_id';
 
-    // The schema stores the password in "password_hash", not "password".
+    // password column is "password_hash", not "password"
     protected $fillable = [
         'first_name',
         'middle_name',
@@ -50,11 +49,6 @@ class User extends Authenticatable
         ];
     }
 
-    /**
-     * Tell Laravel's auth system which column holds the hashed password.
-     * getAuthPassword()     → returns the hash VALUE  (used by Hash::check on login)
-     * getAuthPasswordName() → returns the column NAME (used when rehashing / reset)
-     */
     public function getAuthPassword(): string
     {
         return $this->password_hash;
@@ -65,11 +59,8 @@ class User extends Authenticatable
         return 'password_hash';
     }
 
-    // ---------------- Relationships ----------------
-
     public function roles(): BelongsToMany
     {
-        // Junction table is "user_roles" (user_id, role_id).
         return $this->belongsToMany(Role::class, 'user_roles', 'user_id', 'role_id');
     }
 
@@ -98,45 +89,29 @@ class User extends Authenticatable
         return $this->hasOne(ReceptionistProfile::class, 'user_id', 'user_id');
     }
 
-    // ---------------- Simple RBAC helpers ----------------
-
-    /** Full name helper used across the views. */
     public function fullName(): string
     {
         $mi = $this->middle_name ? ' '.strtoupper(substr($this->middle_name, 0, 1)).'.' : '';
         return trim($this->first_name.$mi.' '.$this->last_name);
     }
 
-    /**
-     * Age in whole years, computed dynamically from date_of_birth.
-     * Returns null when no date of birth is on file. Age is never
-     * stored — it is always derived so it stays correct over time.
-     */
     public function age(): ?int
     {
         return $this->date_of_birth ? $this->date_of_birth->age : null;
     }
 
-    /** Does the user have the given role name? e.g. hasRole('doctor') */
     public function hasRole(string $roleName): bool
     {
         return $this->roles->contains(fn ($role) => $role->name === $roleName);
     }
 
-    /** First role name, used to pick which dashboard to show. */
     public function primaryRole(): ?string
     {
         return optional($this->roles->first())->name;
     }
 
-    /**
-     * Does the user have the given permission?
-     * Checks direct per-user permissions first, then permissions
-     * granted through any of the user's roles.
-     */
     public function hasPermission(string $permissionName): bool
     {
-        // Super admin can do everything.
         if ($this->hasRole('super_admin')) {
             return true;
         }

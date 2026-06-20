@@ -11,9 +11,9 @@ use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
-    /** Send each user to a dashboard that matches their role. */
     public function index()
     {
+        /** @var \App\Models\User $user */
         $user = Auth::user();
         $role = $user->primaryRole();
 

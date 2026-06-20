@@ -12,12 +12,11 @@ use Illuminate\Support\Facades\Auth;
 
 class LabResultRequestController extends Controller
 {
-    /** Show the patient's released results and their soft-copy requests. */
     public function index()
     {
         $patient = $this->patient();
 
-        // Only Released results are visible to the patient.
+        // patients only see released results
         $results = LabResult::whereHas('requestItem.request', function ($q) use ($patient) {
             $q->where('patient_id', $patient->patient_id);
         })->where('workflow_status', 'Released')
@@ -30,9 +29,7 @@ class LabResultRequestController extends Controller
             ->where('patient_id', $patient->patient_id)
             ->orderByDesc('requested_at')->get();
 
-        // Most-recent soft-copy request status per result for this patient.
-        // Drives the table: 'Fulfilled' => show Download, 'Pending' => show
-        // "Requested", none => show the Request Soft Copy button.
+        // most recent status per result — drives the action shown in the table
         $requestStatus = [];
         foreach ($myRequests as $req) {
             if (! isset($requestStatus[$req->result_id])) {
@@ -43,7 +40,6 @@ class LabResultRequestController extends Controller
         return view('patient.lab_requests', compact('results', 'myRequests', 'requestStatus'));
     }
 
-    /** Submit a soft-copy request for one of the patient's own results. */
     public function store(Request $request)
     {
         $data = $request->validate([
@@ -52,7 +48,7 @@ class LabResultRequestController extends Controller
 
         $patient = $this->patient();
 
-        // Make sure the result really belongs to this patient.
+        // verify ownership — patient can't request soft copy for another patient's result
         $owns = LabResult::where('result_id', $data['result_id'])
             ->whereHas('requestItem.request', fn ($q) => $q->where('patient_id', $patient->patient_id))
             ->exists();

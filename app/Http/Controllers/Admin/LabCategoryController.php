@@ -9,7 +9,6 @@ use Illuminate\Http\Request;
 
 class LabCategoryController extends Controller
 {
-    /** List active categories with their active test count. */
     public function index()
     {
         $categories = LabTestCategory::withCount(['tests' => fn ($q) => $q->where('is_active', 1)])
@@ -20,13 +19,11 @@ class LabCategoryController extends Controller
         return view('admin.lab_categories.index', compact('categories'));
     }
 
-    /** Show the create form. */
     public function create()
     {
         return view('admin.lab_categories.create');
     }
 
-    /** Save a new category. */
     public function store(Request $request)
     {
         $data = $request->validate([
@@ -41,7 +38,6 @@ class LabCategoryController extends Controller
         return redirect()->route('admin.lab-categories.index')->with('status', 'Category created.');
     }
 
-    /** Show the edit form. */
     public function edit(int $id)
     {
         $category = LabTestCategory::findOrFail($id);
@@ -49,7 +45,6 @@ class LabCategoryController extends Controller
         return view('admin.lab_categories.edit', compact('category'));
     }
 
-    /** Save edits. */
     public function update(Request $request, int $id)
     {
         $category = LabTestCategory::findOrFail($id);
@@ -66,7 +61,6 @@ class LabCategoryController extends Controller
         return redirect()->route('admin.lab-categories.index')->with('status', 'Category updated.');
     }
 
-    /** Soft-delete: set is_active = 0. Blocked if active tests still exist. */
     public function destroy(int $id)
     {
         $category = LabTestCategory::withCount(['tests' => fn ($q) => $q->where('is_active', 1)])->findOrFail($id);

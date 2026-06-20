@@ -13,7 +13,6 @@ use Illuminate\Support\Facades\DB;
 
 class LabController extends Controller
 {
-    /** Scheduled laboratory tests: pending / processing lab requests. */
     public function index()
     {
         $requests = LabRequest::with(['patient.user', 'items.test', 'items.result', 'doctor.user', 'labAppointment'])
@@ -25,7 +24,6 @@ class LabController extends Controller
         return view('medtech.lab_requests', compact('requests'));
     }
 
-    /** Form to encode the result for one test item. */
     public function createResult(int $itemId)
     {
         $item = LabRequestItem::with(['test', 'request.patient.user', 'result'])->findOrFail($itemId);
@@ -33,7 +31,6 @@ class LabController extends Controller
         return view('medtech.upload_result', compact('item'));
     }
 
-    /** Save the result. Sets workflow_status = Encoded — admin/medtech must release separately. */
     public function storeResult(Request $request, int $itemId)
     {
         $item    = LabRequestItem::with(['request', 'result'])->findOrFail($itemId);
@@ -72,7 +69,7 @@ class LabController extends Controller
                 'released_at'     => null,
             ];
 
-            // Only overwrite the stored file if a new one was actually uploaded.
+            // keep existing file if no new one was uploaded
             if ($filePath !== null) {
                 $resultData['result_file_path'] = $filePath;
             }
@@ -92,7 +89,6 @@ class LabController extends Controller
         return redirect()->route('medtech.lab.index')->with('status', 'Result encoded. Use the Release button to make it visible to the patient.');
     }
 
-    /** Release an Encoded result — patient can view it after this. */
     public function releaseResult(int $itemId)
     {
         $item = LabRequestItem::with(['request.labAppointment', 'result'])->findOrFail($itemId);

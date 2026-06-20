@@ -15,7 +15,6 @@ use Illuminate\Support\Facades\Hash;
 
 class PatientController extends Controller
 {
-    /** Patient information list (searchable). */
     public function index(Request $request)
     {
         $search = $request->query('q');
@@ -35,7 +34,6 @@ class PatientController extends Controller
         return view('receptionist.patients', compact('patients', 'search'));
     }
 
-    /** View a single patient's basic information. */
     public function show(int $patientId)
     {
         $patient = PatientProfile::with('user')->findOrFail($patientId);
@@ -45,16 +43,12 @@ class PatientController extends Controller
         return view('receptionist.show', compact('patient'));
     }
 
-    /** Form to add a new walk-in patient. */
     public function create()
     {
         return view('receptionist.create');
     }
 
-    /**
-     * Create a new patient on behalf of a walk-in.
-     * OTP is bypassed, but an email OR a contact number is required.
-     */
+    // otp bypassed for walk-in registration by receptionist
     public function store(Request $request)
     {
         $data = $request->validate([

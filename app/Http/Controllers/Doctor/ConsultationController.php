@@ -14,7 +14,6 @@ use Illuminate\Support\Facades\DB;
 
 class ConsultationController extends Controller
 {
-    /** Show one consultation with its diagnoses and prescription. */
     public function show(int $consultationId)
     {
         $consultation = Consultation::with([
@@ -35,7 +34,6 @@ class ConsultationController extends Controller
         return view('doctor.consultation', compact('consultation', 'previousPrescriptions', 'doctor'));
     }
 
-    /** Update vitals, notes, and follow-up date on a consultation. */
     public function update(Request $request, int $consultationId)
     {
         $consultation = Consultation::findOrFail($consultationId);
@@ -71,7 +69,6 @@ class ConsultationController extends Controller
         return back()->with('status', 'Consultation updated.');
     }
 
-    /** Add a structured diagnosis (shows in the patient's diagnosis tab). */
     public function storeDiagnosis(Request $request, int $consultationId)
     {
         $consultation = Consultation::findOrFail($consultationId);
@@ -100,7 +97,6 @@ class ConsultationController extends Controller
         return back()->with('status', 'Diagnosis added.');
     }
 
-    /** Create / add to the prescription for this consultation. */
     public function storePrescription(Request $request, int $consultationId)
     {
         $consultation = Consultation::findOrFail($consultationId);
@@ -142,7 +138,7 @@ class ConsultationController extends Controller
         return back()->with('status', 'Medicine added to the prescription.');
     }
 
-    /** Remove a single prescription item (hard delete — items have no clinical standalone meaning). */
+    // hard delete — prescription_items has no is_voided column and items have no standalone clinical record
     public function destroyItem(int $itemId)
     {
         $item   = PrescriptionItem::findOrFail($itemId);

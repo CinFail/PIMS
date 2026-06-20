@@ -11,7 +11,6 @@ use Illuminate\Support\Facades\DB;
 
 class SoftCopyController extends Controller
 {
-    /** Show pending soft-copy requests from patients and doctors. */
     public function index()
     {
         $requests = LabResultRequest::with([
@@ -26,7 +25,6 @@ class SoftCopyController extends Controller
         return view('medtech.soft_copy', compact('requests'));
     }
 
-    /** Fulfill a request. Uses the already-stored file when available; otherwise requires an upload. */
     public function fulfill(Request $request, int $requestId)
     {
         $softRequest = LabResultRequest::with('result')->findOrFail($requestId);
@@ -35,7 +33,7 @@ class SoftCopyController extends Controller
         $hasExistingFile = ! empty($softRequest->result?->result_file_path);
 
         if ($hasExistingFile) {
-            // File was already uploaded during result encoding — no re-upload needed.
+            // file already stored during result encoding, just mark fulfilled
             DB::transaction(function () use ($softRequest, $medtech) {
                 $softRequest->update([
                     'status'       => 'Fulfilled',
@@ -44,7 +42,7 @@ class SoftCopyController extends Controller
                 ]);
             });
         } else {
-            // No file stored yet — require an upload now.
+            // no file yet, must upload now
             $request->validate([
                 'result_file' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
             ]);

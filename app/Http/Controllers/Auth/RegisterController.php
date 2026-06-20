@@ -15,13 +15,12 @@ use Illuminate\Support\Facades\Hash;
 
 class RegisterController extends Controller
 {
-    /** Show the patient registration form. */
     public function showRegistrationForm()
     {
         return view('auth.register');
     }
 
-    /** Create a new patient account. (OTP intentionally NOT implemented yet.) */
+    // otp not implemented yet
     public function register(Request $request)
     {
         $data = $request->validate([
@@ -35,8 +34,6 @@ class RegisterController extends Controller
             'password'      => ['required', 'string', 'min:6', 'confirmed'],
             'consent'       => ['required', 'accepted'],
         ]);
-
-        // Use a transaction so the user + profile + role are all saved together.
         $user = DB::transaction(function () use ($data) {
             $user = User::create([
                 'first_name'                  => $data['first_name'],

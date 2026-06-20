@@ -19,7 +19,6 @@ use Illuminate\Validation\ValidationException;
 
 class UserController extends Controller
 {
-    /** List all users with their roles. */
     public function index(Request $request)
     {
         $search = $request->query('q');
@@ -37,7 +36,6 @@ class UserController extends Controller
         return view('admin.users.index', compact('users', 'search'));
     }
 
-    /** Form to create a new staff user. */
     public function create()
     {
         $roles = Role::orderBy('role_id')->get();
@@ -45,7 +43,6 @@ class UserController extends Controller
         return view('admin.users.create', compact('roles'));
     }
 
-    /** Create a staff user and the matching profile for their role. */
     public function store(Request $request)
     {
         $data = $request->validate([
@@ -72,7 +69,7 @@ class UserController extends Controller
             'family_history'           => ['nullable', 'string'],
         ]);
 
-        // Doctors must have a license number (prescriptions need it).
+        // license number is required for generating prescriptions
         if ($data['role'] === 'doctor' && empty($data['license_number'])) {
             throw ValidationException::withMessages([
                 'license_number' => 'A license number is required for doctors.',
@@ -94,13 +91,11 @@ class UserController extends Controller
                 'consented_privacy_at'        => now(),
             ]);
 
-            // Attach role.
             $role = Role::where('name', $data['role'])->first();
             if ($role) {
                 $user->roles()->attach($role->role_id);
             }
 
-            // Create the matching profile row.
             switch ($data['role']) {
                 case 'doctor':
                     DoctorProfile::create([
@@ -151,7 +146,6 @@ class UserController extends Controller
         return redirect()->route('admin.users.index')->with('status', 'New user created successfully.');
     }
 
-    /** Toggle a user between Active and Deactivated. Super Admin accounts are immutable. */
     public function toggleStatus(int $userId)
     {
         $user = User::with('roles')->findOrFail($userId);
@@ -167,7 +161,7 @@ class UserController extends Controller
 
         $user->update(['account_status' => $new]);
 
-        // Keep staff profile is_active in sync with account status.
+        // sync profile is_active so availability queries don't show deactivated staff
         if ($user->doctorProfile) {
             $user->doctorProfile->update(['is_active' => $isActive]);
         }

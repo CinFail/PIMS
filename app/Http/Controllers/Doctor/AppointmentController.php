@@ -13,11 +13,7 @@ use Illuminate\Support\Facades\DB;
 
 class AppointmentController extends Controller
 {
-    /**
-     * Scheduled check-ups index.
-     *  - Doctor: own upcoming appointments (future only, not voided).
-     *  - Admin:  ALL appointments across the system, paginated, not voided.
-     */
+    // doctor sees own queue; admin sees everything
     public function index()
     {
         $user   = Auth::user();
@@ -51,19 +47,8 @@ class AppointmentController extends Controller
         return view('doctor.appointments', compact('appointments', 'doctor', 'availableSessions'));
     }
 
-    /**
-     * Update appointment status from the dropdown.
-     * Accepted status IDs (per appointment_statuses table):
-     *   4 = Completed, 5 = Cancelled, 6 = No Show, 7 = Rescheduled
-     *
-     * When status 7 (Rescheduled) is chosen, the existing record's appointment_at
-     * is updated with the supplied date+time — no new row is created.
-     *
-     * Transitioning to any terminal status (4-7) automatically frees the linked
-     * duty session via DoctorDutySession::isTaken() (which excludes those IDs).
-     *
-     * Both the owning doctor and a super_admin may call this endpoint.
-     */
+    // status 7 (rescheduled) updates appointment_at in-place, no new row
+    // terminal statuses 4-7 free the slot because isTaken() excludes them
     public function updateStatus(Request $request, int $appointmentId)
     {
         $rules = [

@@ -18,7 +18,6 @@ use Illuminate\Support\Facades\DB;
 
 class AppointmentController extends Controller
 {
-    /** List the patient's own appointments. */
     public function index()
     {
         $patient = $this->patient();
@@ -46,7 +45,6 @@ class AppointmentController extends Controller
         return view('patient.appointments', compact('appointments', 'labAppointments', 'availableSessions'));
     }
 
-    /** Patient reschedules their own appointment to a different duty session. */
     public function reschedule(Request $request, int $id)
     {
         $data = $request->validate([
@@ -83,7 +81,6 @@ class AppointmentController extends Controller
         return back()->with('status', 'Appointment rescheduled successfully.');
     }
 
-    /** Show the booking form: open slots and lab tests. */
     public function create()
     {
         $sessions = DoctorDutySession::with('doctor.user')
@@ -98,7 +95,7 @@ class AppointmentController extends Controller
         $labTests = LabTest::with('category')->where('is_active', 1)
             ->orderBy('test_name')->get();
 
-        // Non-patient roles (e.g. receptionist) need a patient selector.
+        // receptionist booking on behalf of a patient needs the selector
         /** @var \App\Models\User $actor */
         $actor = Auth::user();
         $patients = collect();
@@ -112,7 +109,6 @@ class AppointmentController extends Controller
         return view('patient.book', compact('sessions', 'labTests', 'patients'));
     }
 
-    /** Book the chosen slot. */
     public function store(Request $request)
     {
         /** @var \App\Models\User $actor */

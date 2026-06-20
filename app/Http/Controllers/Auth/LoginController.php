@@ -10,7 +10,6 @@ use Illuminate\Support\Facades\Auth;
 
 class LoginController extends Controller
 {
-    /** Show the login form. */
     public function showLoginForm()
     {
         if (Auth::check()) {
@@ -20,7 +19,6 @@ class LoginController extends Controller
         return view('auth.login');
     }
 
-    /** Handle a login attempt. */
     public function login(Request $request)
     {
         $credentials = $request->validate([
@@ -32,14 +30,14 @@ class LoginController extends Controller
 
         $user = User::where('email', $credentials['email'])->first();
 
-        // Unknown email — generic message to avoid enumeration.
+        // same message for wrong email or wrong password — avoids user enumeration
         if (! $user) {
             return back()->withErrors([
                 'email' => 'The email or password is incorrect.',
             ])->onlyInput('email');
         }
 
-        // Account is temporarily locked.
+        // locked
         if ($user->locked_until && $user->locked_until->isFuture()) {
             $minutes = (int) ceil(now()->diffInSeconds($user->locked_until) / 60);
             return back()->withErrors([
@@ -50,6 +48,7 @@ class LoginController extends Controller
         if (Auth::attempt($credentials, $remember)) {
             $request->session()->regenerate();
 
+            /** @var \App\Models\User $user */
             $user = Auth::user();
 
             if ($user->account_status !== 'Active') {
@@ -61,7 +60,7 @@ class LoginController extends Controller
                 ])->onlyInput('email');
             }
 
-            // Clear lock on successful login.
+            // clear the lock
             $user->update([
                 'failed_login_attempts' => 0,
                 'locked_until'          => null,
@@ -72,7 +71,7 @@ class LoginController extends Controller
             return redirect()->intended(route('dashboard'));
         }
 
-        // Increment failed attempts; lock at 5.
+        // lock after 5 failed attempts
         $attempts = ($user->failed_login_attempts ?? 0) + 1;
 
         if ($attempts >= 5) {
@@ -97,7 +96,6 @@ class LoginController extends Controller
         ])->onlyInput('email');
     }
 
-    /** Log the user out. */
     public function logout(Request $request)
     {
         $userId = Auth::id();

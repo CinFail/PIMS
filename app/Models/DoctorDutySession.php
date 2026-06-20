@@ -31,7 +31,6 @@ class DoctorDutySession extends Model
         return $this->hasMany(Appointment::class, 'duty_session_id', 'duty_session_id');
     }
 
-    /** A slot is "taken" if it already has a non-voided appointment. */
     public function isTaken(): bool
     {
         return $this->appointments()->where('is_voided', 0)->exists();

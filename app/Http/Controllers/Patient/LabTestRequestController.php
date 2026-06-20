@@ -13,17 +13,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
-/**
- * Lets a patient request laboratory tests WITHOUT booking a doctor
- * consultation, and schedule a laboratory appointment for the visit.
- *
- * This is separate from the doctor appointment flow
- * (Patient\AppointmentController) and from the soft-copy result flow
- * (Patient\LabResultRequestController).
- */
 class LabTestRequestController extends Controller
 {
-    /** Show the "Request a Lab Test" form: available tests + preferred schedule. */
     public function create()
     {
         $labTests = LabTest::with('category')
@@ -34,10 +25,6 @@ class LabTestRequestController extends Controller
         return view('patient.lab_request_create', compact('labTests'));
     }
 
-    /**
-     * Create a self-requested lab request (no referring doctor) together with
-     * a laboratory appointment for the chosen date and time.
-     */
     public function store(Request $request)
     {
         $data = $request->validate([
@@ -55,7 +42,7 @@ class LabTestRequestController extends Controller
             'scheduled_time.date_format'    => 'Please enter a valid time.',
         ]);
 
-        // Validate day of week: Saturday (6) is not available
+        // saturday = 6, not a clinic day
         $date = \Illuminate\Support\Carbon::parse($data['scheduled_date']);
         if ($date->dayOfWeek === 6) {
             return back()->withInput()->withErrors([
@@ -68,7 +55,7 @@ class LabTestRequestController extends Controller
         $patient = $this->patient();
 
         $labAppointment = DB::transaction(function () use ($data, $patient) {
-            // doctor_id stays NULL: this is a patient self-request with no referring doctor.
+            // doctor_id is null — patient-initiated, no referral
             $labRequest = LabRequest::create([
                 'patient_id'     => $patient->patient_id,
                 'doctor_id'      => null,

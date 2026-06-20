@@ -10,7 +10,6 @@ use Illuminate\Http\Request;
 
 class RolePermissionController extends Controller
 {
-    /** Show all roles. The admin picks one to edit its permissions. */
     public function index()
     {
         $roles = Role::withCount('permissions')->orderBy('role_id')->get();
@@ -18,7 +17,6 @@ class RolePermissionController extends Controller
         return view('admin.roles.index', compact('roles'));
     }
 
-    /** Show the checkbox grid of permissions for one role. Super Admin is read-only. */
     public function edit(int $roleId)
     {
         $role = Role::with('permissions')->findOrFail($roleId);
@@ -34,7 +32,6 @@ class RolePermissionController extends Controller
         return view('admin.roles.edit', compact('role', 'permissions', 'assigned'));
     }
 
-    /** Save the chosen permissions for the role. Change is audit-logged. Super Admin is immutable. */
     public function update(Request $request, int $roleId)
     {
         $role = Role::findOrFail($roleId);
@@ -52,7 +49,6 @@ class RolePermissionController extends Controller
         $old = $role->permissions()->pluck('permissions.permission_id')->all();
         $new = $data['permissions'] ?? [];
 
-        // sync() updates the role_has_permissions junction in one call.
         $role->permissions()->sync($new);
 
         AuditLogger::log(

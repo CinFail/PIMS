@@ -9,10 +9,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 class CheckPermission
 {
-    /**
-     * Allow the request only if the user has the given permission.
-     * Usage on a route: ->middleware('permission:release-lab-result')
-     */
+    // usage: ->middleware('permission:release-lab-result')
     public function handle(Request $request, Closure $next, string $permission): Response
     {
         $user = Auth::user();

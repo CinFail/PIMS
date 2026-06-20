@@ -11,7 +11,6 @@ use Illuminate\Support\Facades\Auth;
 
 class DoctorScheduleController extends Controller
 {
-    /** List all non-voided duty sessions, newest date first. */
     public function index()
     {
         $sessions = DoctorDutySession::with('doctor.user')
@@ -24,7 +23,6 @@ class DoctorScheduleController extends Controller
         return view('admin.doctor-schedules.index', compact('sessions'));
     }
 
-    /** Form to add a new duty session. */
     public function create()
     {
         $doctors = $this->activeDoctors();
@@ -32,7 +30,6 @@ class DoctorScheduleController extends Controller
         return view('admin.doctor-schedules.create', compact('doctors'));
     }
 
-    /** Save a new duty session. */
     public function store(Request $request)
     {
         $data = $request->validate([
@@ -43,7 +40,7 @@ class DoctorScheduleController extends Controller
             'status'     => ['required', 'in:Scheduled,Ongoing,Completed,Cancelled'],
         ]);
 
-        // Extra guard: doctor must still be active (the exists rule only checks the row exists).
+        // exists() only checks the row exists, not that is_active = 1
         abort_unless(
             DoctorProfile::where('doctor_id', $data['doctor_id'])->where('is_active', 1)->exists(),
             422,
@@ -68,7 +65,6 @@ class DoctorScheduleController extends Controller
             ->with('status', 'Duty session created successfully.');
     }
 
-    /** Form to edit an existing duty session. */
     public function edit(int $id)
     {
         $session = DoctorDutySession::where('is_voided', 0)->findOrFail($id);
@@ -77,7 +73,6 @@ class DoctorScheduleController extends Controller
         return view('admin.doctor-schedules.edit', compact('session', 'doctors'));
     }
 
-    /** Save changes to an existing duty session. */
     public function update(Request $request, int $id)
     {
         $session = DoctorDutySession::where('is_voided', 0)->findOrFail($id);
@@ -112,7 +107,6 @@ class DoctorScheduleController extends Controller
             ->with('status', 'Duty session updated successfully.');
     }
 
-    /** Delete a duty session, voiding any active appointments linked to it. */
     public function destroy(int $id)
     {
         $session = DoctorDutySession::where('is_voided', 0)->findOrFail($id);
@@ -140,7 +134,6 @@ class DoctorScheduleController extends Controller
                 .($voided ? " {$voided} linked appointment(s) were also cancelled." : ''));
     }
 
-    /** Active doctors ordered by last name, used in create/edit forms. */
     private function activeDoctors()
     {
         return DoctorProfile::with('user')

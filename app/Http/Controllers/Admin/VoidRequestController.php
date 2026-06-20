@@ -33,7 +33,6 @@ class VoidRequestController extends Controller
         'prescriptions'     => 'Prescription',
     ];
 
-    /** Admin queue: pending first, then resolved. */
     public function index()
     {
         $requests = VoidRequest::with('requester', 'reviewer')
@@ -41,8 +40,8 @@ class VoidRequestController extends Controller
             ->orderByDesc('created_at')
             ->paginate(20);
 
-        // Detect which 'Approved' requests have already had their target records restored
-        // by checking the live record state — avoids needing 'Restored' in the status ENUM.
+        // check live record state to know which approved voids were later restored
+        // (avoids adding 'Restored' to the ENUM just for display)
         $restoredVrIds = [];
         foreach ($requests as $vr) {
             if ($vr->status !== 'Approved') continue;
@@ -64,7 +63,6 @@ class VoidRequestController extends Controller
         return view('admin.void_requests', compact('requests', 'voidableTables', 'tableLabels', 'restoredVrIds'));
     }
 
-    /** Doctor, MedTech, or Patient (for own appointments) submits a void request. */
     public function store(Request $request)
     {
         $data = $request->validate([
@@ -133,7 +131,6 @@ class VoidRequestController extends Controller
         return back()->with('status', 'Void request submitted. Awaiting admin approval.');
     }
 
-    /** Admin approves — sets is_voided = 1 on the target record. */
     public function approve(int $id)
     {
         $vr = VoidRequest::where('status', 'Pending')->findOrFail($id);
@@ -164,7 +161,6 @@ class VoidRequestController extends Controller
         return back()->with('status', 'Void approved. Record has been voided.');
     }
 
-    /** Admin rejects the request — record is untouched. */
     public function reject(int $id)
     {
         $vr = VoidRequest::where('status', 'Pending')->findOrFail($id);
@@ -181,7 +177,6 @@ class VoidRequestController extends Controller
         return back()->with('status', 'Void request rejected.');
     }
 
-    /** Admin directly voids a record without going through the request queue. */
     public function adminVoid(Request $request)
     {
         $data = $request->validate([
@@ -222,7 +217,6 @@ class VoidRequestController extends Controller
         return back()->with('status', 'Record voided directly.');
     }
 
-    /** Admin restores a voided record, reversing an approved void. */
     public function restore(int $id)
     {
         $vr = VoidRequest::where('status', 'Approved')->findOrFail($id);
@@ -243,7 +237,7 @@ class VoidRequestController extends Controller
                 return back()->withErrors(['restore' => 'This record is not currently voided.']);
             }
 
-            // For appointments: verify the duty session is still available before restoring.
+            // for appointments, make sure the slot isn't already claimed by another booking
             if ($vr->table_name === 'appointments' && ! empty($record->duty_session_id)) {
                 $slotTaken = DB::table('appointments')
                     ->where('duty_session_id', $record->duty_session_id)
@@ -267,7 +261,7 @@ class VoidRequestController extends Controller
                 'void_approved_by' => null,
             ];
 
-            // Reset to Scheduled so the duty session reads as taken again.
+            // reset status so isTaken() picks the slot back up
             if ($vr->table_name === 'appointments') {
                 $restoreData['status_id'] = 1;
             }

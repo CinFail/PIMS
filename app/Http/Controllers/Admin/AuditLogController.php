@@ -8,7 +8,6 @@ use Illuminate\Http\Request;
 
 class AuditLogController extends Controller
 {
-    /** Full audit trail with optional filters. */
     public function index(Request $request)
     {
         $module = $request->query('module');
@@ -26,13 +25,8 @@ class AuditLogController extends Controller
         return view('admin.audit.index', compact('logs', 'modules', 'module', 'action'));
     }
 
-    /**
-     * Role-specific dashboards (Patient / MedTech / Doctor / Receptionist).
-     * Each one simply filters the audit trail by the matching module(s).
-     */
     public function dashboard(string $role)
     {
-        // Map each dashboard to the audit module names it should show.
         $map = [
             'patient'      => ['Patient', 'Appointments', 'Laboratory'],
             'medtech'      => ['Laboratory'],

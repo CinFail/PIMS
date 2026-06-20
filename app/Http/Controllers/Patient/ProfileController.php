@@ -12,7 +12,6 @@ use Illuminate\Support\Facades\Auth;
 
 class ProfileController extends Controller
 {
-    /** Show the patient's editable profile. */
     public function edit()
     {
         /** @var \App\Models\User $user */
@@ -23,7 +22,6 @@ class ProfileController extends Controller
         return view('patient.profile', compact('user', 'profile', 'medicalHistory'));
     }
 
-    /** Save profile changes. Every update is audit-logged. */
     public function update(Request $request)
     {
         /** @var \App\Models\User $user */

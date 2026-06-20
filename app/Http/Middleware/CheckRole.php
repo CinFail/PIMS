@@ -9,10 +9,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 class CheckRole
 {
-    /**
-     * Allow the request only if the logged-in user has ONE of the given roles.
-     * Usage on a route: ->middleware('role:doctor') or 'role:doctor,super_admin'
-     */
+    // usage: ->middleware('role:doctor') or 'role:doctor,super_admin'
     public function handle(Request $request, Closure $next, string ...$roles): Response
     {
         $user = Auth::user();
@@ -31,8 +28,7 @@ class CheckRole
             }
         }
 
-        // If the route also carries permission: middleware and the user holds
-        // that permission, let them through regardless of role.
+        // permission middleware on the same route can also satisfy access
         foreach ($request->route()->middleware() as $m) {
             if (str_starts_with($m, 'permission:') &&
                 $user->hasPermission(substr($m, strlen('permission:')))) {
